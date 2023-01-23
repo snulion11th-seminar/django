@@ -34,20 +34,21 @@
 ### 2. Process
 
     1) branch 생성
+    - solution branch에서 branch를 파서 작업하시면 됩니다.
     - branch 명은 week5/solution, week6/solution, week7/solution 으로 해주세요.
     - 협업이 필요할시 jh/week5, hs/week5 이런식으로 작업하고 최종적으로 soluion/week2로 합쳐주시면 됩니다. 이 부분은 자유롭게
 
     2) commit
     - commit message는 다음 중 하나로 작성해주세요.
       - feat: 새로운 feature추가
-      - fix : 내용 수정
-      - refactor : 최적화
-      - chore : 사소한 변경(lint, typo ...)
+      - fix: 내용 수정
+      - refactor: 최적화
+      - chore: 사소한 변경(lint, typo ...)
 
     3) pull request
     - 작업 후 solution branch로 pull request 날려주세요.
     - reviewers : 한 주차 팀 6명
-    - assignees : 발표자 2명 + 김지현
+    - assignees : 발표자 2명 중 1명
 
+    4) merge
     - merge 후에 week5/solution, week6/solution, week7/solution branch는 반드시 남겨주세요. 삭제 금지 !
-    - 다음 주차 사람은 solution branch에서 branch를 파서 작업해 주시면 됩니다.
