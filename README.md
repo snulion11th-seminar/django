@@ -3,7 +3,7 @@
 ## Goal
 
 -   2023 1학기 블로그만들기 세션에서 backend 파트 세미나를 위한 base code 제작
--   1학기 동아리 활동 간 필요한 매 주차 solution code
+-   1학기 동아리 활동 간 필요한 매 주차 solution code 제작
 
 ## Curriculum
 
@@ -47,8 +47,9 @@
 
     3) pull request
     - 작업 후 solution branch로 pull request 날려주세요.
-    - reviewers : 한 주차 팀 6명
+    - reviewers : 한 주차 팀 6명 + 김지현
     - assignees : 발표자 2명 중 1명
 
     4) merge
+    - 발표자 2명 중 1명이 merge 하시고 노티 주세요.
     - merge 후에 week5/solution, week6/solution, week7/solution branch는 반드시 남겨주세요. 삭제 금지 !
