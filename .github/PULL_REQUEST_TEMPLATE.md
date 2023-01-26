@@ -4,13 +4,6 @@
 - [ ] 
 
 
-Fixes # (issue)
-
-## Checklist
-
-- [ ] yarn check:lint
-- [ ] yarn check:prettier
-
 ## Type of change (전 주차 대비)
 
 Please delete options that are not relevant.
