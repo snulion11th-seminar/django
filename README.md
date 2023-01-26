@@ -1,4 +1,4 @@
-# 2023 서울대 멋쟁이 사자처럼 preSeminar django repo입니다.
+# 11th snulion pre-seminar django
 
 ## Goal
 
@@ -47,8 +47,8 @@
 
     3) pull request
     - 작업 후 solution branch로 pull request 날려주세요.
-    - reviewers : 한 주차 팀 6명 + 김지현
-    - assignees : 발표자 2명 중 1명
+    - reviewers : 다른 발표자 1명
+    - assignees : 자기 자신
 
     4) merge
     - 발표자 2명 중 1명이 merge 하시고 노티 주세요.
