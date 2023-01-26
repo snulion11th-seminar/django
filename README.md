@@ -1,4 +1,4 @@
-# 2023 서울대 멋쟁이 사자처럼 preSeminar django repo입니다.
+# 11th snulion pre-seminar django
 
 ## Goal
 
