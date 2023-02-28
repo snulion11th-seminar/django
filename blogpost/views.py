@@ -38,7 +38,7 @@ class PostListView(APIView):
             contents = [{post.title:post.content} for post in posts]
             return Response(contents)
         except Exception as e:
-            return Response({"error":e})
+            return Response({"error":f"{e}"})
 
     def post(self, request):
         try:
@@ -47,7 +47,7 @@ class PostListView(APIView):
             post = Post.objects.create(title=title, content=content)
             return Response({"msg":f"'{post.title}'이 생성되었어요!"})
         except Exception as e:
-            return Response({"error":e})
+            return Response({"error":f"{e}"})
 
 class PostDetailView(APIView):
     def get(self, request, post_id):
@@ -55,7 +55,7 @@ class PostDetailView(APIView):
             post = Post.objects.get(id=post_id)
             return Response({"title":post.title, "content":post.content})
         except Exception as e:
-            return Response({"error":e})
+            return Response({"error":f"{e}"})
 
     def delete(self, request, post_id):
         try:
@@ -64,7 +64,7 @@ class PostDetailView(APIView):
             post.delete()
             return Response({"msg":f"'{title}'이 삭제되었어요!"})
         except Exception as e:
-            return Response({"error":e})
+            return Response({"error":f"{e}"})
 
     # 과제
     def patch(self, request, post_id):
@@ -76,7 +76,7 @@ class PostDetailView(APIView):
                 post.update(content=request.data['content'])
             return Response({"msg":"업데이트 되었습니다!"})
         except Exception as e:
-            return Response({"error":e})
+            return Response({"error":f"{e}"})
 
 
 # CBV with serializer
@@ -87,16 +87,17 @@ class PostListView(APIView):
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data)
         except Exception as e:
-            return Response({"error":e})
+            return Response({"error":f"{e}"})
 
     def post(self, request):
         try:
             title = request.data['title']
             content = request.data['content']
             post = Post.objects.create(title=title, content=content)
-            return Response({"msg":f"'{post.title}'이 생성되었어요!"})
+            serializer = PostSerializer(post)
+            return Response(serializer.data)
         except Exception as e:
-            return Response({"error" : e})
+            return Response({"error":f"{e}"})
 
 class PostDetailView(APIView):
     def get(self, request, post_id):
@@ -105,7 +106,7 @@ class PostDetailView(APIView):
             serializer = PostSerializer(post)
             return Response(serializer.data)
         except Exception as e:
-            return Response({"error":e})
+            return Response({"error":f"{e}"})
 
     def delete(self, request, post_id):
         try:
@@ -114,13 +115,13 @@ class PostDetailView(APIView):
             post.delete()
             return Response({"msg":f"'{title}'이 삭제되었어요!"})
         except Exception as e:
-            return Response({"error":e})
+            return Response({"error":f"{e}"})
 
     # 과제
     def patch(self, request, post_id):
         try:
             post = Post.objects.filter(id=post_id)
             serializer = PostSerializer(post, data=request.data, partial=True)
-            return Response({"msg":"업데이트 되었습니다!"})
+            return Response({serializer.data})
         except Exception as e:
-            return Response({"error":e})
+            return Response({"error":f"{e}"})
