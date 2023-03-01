@@ -5,7 +5,8 @@ from .models import UserProfile
 class UserProfileSerializer(ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = "__all__"
+        fields = ["major", "college"] 
+
         
 class UserSerializer(ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
