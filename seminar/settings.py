@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blogpost',
     'accounts',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    "rest_framework_simplejwt.token_blacklist"
 ]
 
 MIDDLEWARE = [
@@ -127,6 +128,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Authentication classes
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': {
+        'rest_framework.permissions.IsAuthenticated'
+    },
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
