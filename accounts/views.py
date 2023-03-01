@@ -4,7 +4,8 @@ from django.contrib import auth
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import UserSerializer
+from .serializers import UserSerializer,UserProfileSerializer
+from .models import UserProfile
 from rest_framework_simplejwt.tokens import RefreshToken
 
 ############## no jwt ###################
@@ -89,3 +90,15 @@ class LogoutView(APIView):
             return Response({"msg":f"logout 되었습니다."}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response({"error":f"{e}"}, status=status.HTTP_401_UNAUTHORIZED)
+
+class ProfileUpdateView(APIView):
+    def patch(self, request):
+        try:
+            user = request.user
+            profile = UserProfile.objects.get(user=user)
+            serializer = UserProfileSerializer(profile, data=request.data) 
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data) 
+        except Exception as e:
+            return Response({"err": f"{e}"})
