@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from .serializers import UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
 ############## no jwt ###################
 class SignupView(APIView):
     def post(self, request):
