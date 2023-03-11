@@ -4,9 +4,9 @@ from .views import ReadAllPostView, CreatePostView, PostListView, PostDetailView
 app_name = 'post'
 urlpatterns = [
     # FBV url path
-    path("register_post/", CreatePostView, name='post'),
-    path("see_post/", ReadAllPostView, name="get"),
+    path("register_post/", CreatePostView),
+    path("see_post/", ReadAllPostView),
     # CBV url path
-    path("", PostListView.as_view(), name="post-list"),
-    path("<int:post_id>/", PostDetailView.as_view(), name="single-post")
+    path("", PostListView.as_view()),
+    path("<int:post_id>/", PostDetailView.as_view())
 ]
