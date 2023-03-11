@@ -122,6 +122,8 @@ class PostDetailView(APIView):
         try:
             post = Post.objects.filter(id=post_id)
             serializer = PostSerializer(post, data=request.data, partial=True)
-            return Response({serializer.data})
+            if serializer.is_valid():
+                serializer.save()
+                return Response({serializer.data})
         except Exception as e:
             return Response({"error":f"{e}"})

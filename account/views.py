@@ -99,7 +99,7 @@ class ProfileUpdateView(APIView):
         try:
             user = request.user
             profile = UserProfile.objects.get(user=user)
-            serializer = UserProfileSerializer(profile, data=request.data) 
+            serializer = UserProfileSerializer(profile, data=request.data, partial=True) 
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data) 
