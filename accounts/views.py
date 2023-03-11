@@ -19,8 +19,8 @@ class SignupView(APIView):
                 password=request.data['password1']
                 )
             auth.login(request, user)
-            user_serializer = UserSerializer(user)
-            return Response(user_serializer.data, status=status.HTTP_201_CREATED)
+            serialized_data = UserSerializer(user).data
+            return Response(serialized_data, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error":f"signup error : {e}"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -32,8 +32,8 @@ class SigninView(APIView):
                 password=request.data['password']
             )
             auth.login(request, user)
-            user_serializer = UserSerializer(user)
-            return Response(user_serializer.data)
+            serialized_data = UserSerializer(user).data
+            return Response(serialized_data)
         except Exception as e:
             return Response({"error":f"login error : {e}"})
         
@@ -47,10 +47,12 @@ class LogoutView(APIView):
         
         
 ################ use jwt ###################
-def generate_token(user:User) -> str:
+def generate_token_in_serialized_data(user:User) -> str:
     token = RefreshToken.for_user(user)
     refresh_token, access_token = str(token), str(token.access_token)
-    return refresh_token, access_token
+    serialized_data = UserSerializer(user).data
+    serialized_data['token']={"access":access_token, "refresh":refresh_token}
+    return serialized_data
 
 class SignupView(APIView):
     def post(self, request):
@@ -61,10 +63,8 @@ class SignupView(APIView):
                 username=request.data['username'],
                 password=request.data['password1']
                 )            
-            refresh_token, access_token = generate_token(user)
-            data = UserSerializer(user).data
-            data['token']={"access":access_token, "refresh":refresh_token}
-            return Response(data, status=status.HTTP_200_OK)
+            serialized_data = generate_token_in_serialized_data(user)
+            return Response(serialized_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error":f"signup error : {e}"})
         
@@ -75,10 +75,8 @@ class SigninView(APIView):
                 username=request.data['username'],
                 password=request.data['password']
             )
-            refresh_token, access_token = generate_token(user)
-            data = UserSerializer(user).data
-            data['token']={"access": access_token, "refresh":refresh_token}
-            return Response(data, status=status.HTTP_200_OK)
+            serialized_data = generate_token_in_serialized_data(user)
+            return Response(serialized_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error":f"login error : {e}"}, status=status.HTTP_400_BAD_REQUEST)
         
