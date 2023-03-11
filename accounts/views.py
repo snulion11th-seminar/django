@@ -47,12 +47,19 @@ class LogoutView(APIView):
         
         
 ################ use jwt ###################
+<<<<<<< HEAD
 def generate_token_in_serialized_data(user:User) -> str:
     token = RefreshToken.for_user(user)
     refresh_token, access_token = str(token), str(token.access_token)
     serialized_data = UserSerializer(user).data
     serialized_data['token']={"access":access_token, "refresh":refresh_token}
     return serialized_data
+=======
+def generate_token(user:User) -> str:
+    token = RefreshToken.for_user(user)
+    refresh_token, access_token = str(token), str(token.access_token)
+    return refresh_token, access_token
+>>>>>>> 011ed2c210d5a1e676bf7115e833a1637ba9af1b
 
 class SignupView(APIView):
     def post(self, request):
@@ -63,8 +70,15 @@ class SignupView(APIView):
                 username=request.data['username'],
                 password=request.data['password1']
                 )            
+<<<<<<< HEAD
             serialized_data = generate_token_in_serialized_data(user)
             return Response(serialized_data, status=status.HTTP_200_OK)
+=======
+            refresh_token, access_token = generate_token(user)
+            data = UserSerializer(user).data
+            data['token']={"access":access_token, "refresh":refresh_token}
+            return Response(data, status=status.HTTP_200_OK)
+>>>>>>> 011ed2c210d5a1e676bf7115e833a1637ba9af1b
         except Exception as e:
             return Response({"error":f"signup error : {e}"})
         
@@ -75,8 +89,15 @@ class SigninView(APIView):
                 username=request.data['username'],
                 password=request.data['password']
             )
+<<<<<<< HEAD
             serialized_data = generate_token_in_serialized_data(user)
             return Response(serialized_data, status=status.HTTP_200_OK)
+=======
+            refresh_token, access_token = generate_token(user)
+            data = UserSerializer(user).data
+            data['token']={"access": access_token, "refresh":refresh_token}
+            return Response(data, status=status.HTTP_200_OK)
+>>>>>>> 011ed2c210d5a1e676bf7115e833a1637ba9af1b
         except Exception as e:
             return Response({"error":f"login error : {e}"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -98,5 +119,9 @@ class ProfileUpdateView(APIView):
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data) 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 011ed2c210d5a1e676bf7115e833a1637ba9af1b
         except Exception as e:
             return Response({"err": f"{e}"})
