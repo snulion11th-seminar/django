@@ -91,7 +91,7 @@ class PostDetailView(APIView):
         if not title or not content :
             return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            post.update(title=request.data['title'], content=request.data['content'])
+            post.update(title=title, content=content)
             return Response({
                 "id":post.id,
                 "title":post.title,
