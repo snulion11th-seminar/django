@@ -6,7 +6,7 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView
 )
 
-
+ 
 app_name = 'account'
 urlpatterns = [
     # FBV url path
