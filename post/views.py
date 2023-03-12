@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import Post
@@ -29,7 +29,7 @@ def CreatePostView(request):
 
 #CBV without serializer
 class PostListView(APIView):
-    # allowed_method = ["POST"]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request):
         posts = Post.objects.all()
         contents = [{"id":post.id,
@@ -57,6 +57,7 @@ class PostListView(APIView):
         
 
 class PostDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request, post_id):
         try:
             post = Post.objects.get(id=post_id)
@@ -69,8 +70,6 @@ class PostDetailView(APIView):
             "created_at":post.created_at
             }, status=status.HTTP_200_OK)
         
-        
-
     def delete(self, request, post_id):
         try:
             post = Post.objects.get(id=post_id)
@@ -79,7 +78,6 @@ class PostDetailView(APIView):
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
         
-
     # 과제
     def patch(self, request, post_id):
         try:
@@ -104,6 +102,7 @@ class PostDetailView(APIView):
 
 # CBV with serializer
 class PostListView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request):
         posts = Post.objects.all()
         serializer = PostSerializer(posts, many=True)
@@ -120,6 +119,7 @@ class PostListView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class PostDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request, post_id):
         try:
             post = Post.objects.get(id=post_id)
