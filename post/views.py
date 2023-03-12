@@ -45,14 +45,13 @@ class PostListView(APIView):
         content = request.data.get('content')
         if not title or not content:
             return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            post = Post.objects.create(title=title, content=content)
-            return Response({
-                "id":post.id,
-                "title":post.title,
-                "content":post.content,
-                "created_at":post.created_at
-                }, status=status.HTTP_201_CREATED)
+        post = Post.objects.create(title=title, content=content)
+        return Response({
+            "id":post.id,
+            "title":post.title,
+            "content":post.content,
+            "created_at":post.created_at
+            }, status=status.HTTP_201_CREATED)
 
         
 
@@ -88,14 +87,13 @@ class PostDetailView(APIView):
         content = request.data.get('content')
         if not title or not content :
             return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            post.update(title=title, content=content)
-            return Response({
-                "id":post.id,
-                "title":post.title,
-                "content":post.content,
-                "created_at":post.created_at
-                }, status=status.HTTP_200_OK)
+        post.update(title=title, content=content)
+        return Response({
+            "id":post.id,
+            "title":post.title,
+            "content":post.content,
+            "created_at":post.created_at
+            }, status=status.HTTP_200_OK)
         
         
 
@@ -113,10 +111,9 @@ class PostListView(APIView):
         content = request.data.get('content')
         if not title or not content:
             return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            post = Post.objects.create(title=title, content=content)
-            serializer = PostSerializer(post)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        post = Post.objects.create(title=title, content=content)
+        serializer = PostSerializer(post)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class PostDetailView(APIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -144,6 +141,5 @@ class PostDetailView(APIView):
         serializer = PostSerializer(post, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

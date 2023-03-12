@@ -21,17 +21,16 @@ class SignupView(APIView):
         major=request.data.get('major')
         if not email or not username or not password:
             return Response({"detail": "[email, password, username] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            user = User.objects.create(
-                email=request.data["email"],
-                username=request.data['username'],
-                password=request.data['password']
-                )
-            user_profile = UserProfile.objects.create(
-                user=user,
-                college=college,
-                major=major
+        user = User.objects.create(
+            email=request.data["email"],
+            username=request.data['username'],
+            password=request.data['password']
             )
+        user_profile = UserProfile.objects.create(
+            user=user,
+            college=college,
+            major=major
+        )
         auth.login(request, user)
         serialized_data = UserSerializer(user).data
         return Response(serialized_data, status=status.HTTP_201_CREATED)
@@ -78,19 +77,18 @@ class SignupView(APIView):
             return Response({"detail": "[email, password, username] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
         elif User.objects.filter(username=username):
             return Response({"detail": "user already exists."}, status=status.HTTP_403_FORBIDDEN)
-        else:
-            user = User.objects.create(
-                email=email,
-                username=username,
-                password=password
-                )
-            user_profile = UserProfile.objects.create(
-                user=user,
-                college=college,
-                major=major
+        user = User.objects.create(
+            email=email,
+            username=username,
+            password=password
             )
-            serialized_data = generate_token_in_serialized_data(user)
-            return Response(serialized_data, status=status.HTTP_201_CREATED)
+        user_profile = UserProfile.objects.create(
+            user=user,
+            college=college,
+            major=major
+        )
+        serialized_data = generate_token_in_serialized_data(user)
+        return Response(serialized_data, status=status.HTTP_201_CREATED)
         
 class SigninView(APIView):
     def post(self, request):
@@ -108,9 +106,8 @@ class LogoutView(APIView):
     def post(self, request):
         if not request.user.is_authenticated:
             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            RefreshToken(request.data['refresh']).blacklist()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        RefreshToken(request.data['refresh']).blacklist()
+        return Response(status=status.HTTP_204_NO_CONTENT)
         
 class TokenRefreshView(APIView):
     def post(self, request):
@@ -118,22 +115,19 @@ class TokenRefreshView(APIView):
             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
         elif not RefreshToken(request.data['refresh']).verify():
             return Response({"detail": "refresh token 이 blacklist 에 있습니다."}, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            user = request.user
-            token = AccessToken.for_user(user)
-            access_token = str(token)
-            return Response({"access": access_token}, status=status.HTTP_200_OK)
+        user = request.user
+        token = AccessToken.for_user(user)
+        access_token = str(token)
+        return Response({"access": access_token}, status=status.HTTP_200_OK)
         
 class ProfileUpdateView(APIView):
     def patch(self, request):
         if not request.user.is_authenticated:
             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            user = request.user
-            profile = UserProfile.objects.get(user=user)
-            serializer = UserProfileSerializer(profile, data=request.data, partial=True) 
-            if not serializer.is_valid():
-                return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+        user = request.user
+        profile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True) 
+        if not serializer.is_valid():
+            return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
