@@ -1,8 +1,8 @@
-from django.shortcuts import render
-from rest_framework.views import APIView
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import Post
@@ -111,6 +111,8 @@ class PostListView(APIView):
         content = request.data.get('content')
         if not title or not content:
             return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # TODO auth
         post = Post.objects.create(title=title, content=content)
         serializer = PostSerializer(post)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -126,18 +128,22 @@ class PostDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, post_id):
+        # TODO auth
         try:
             post = Post.objects.get(id=post_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)        
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    # 과제
+    
+    #과제
     def patch(self, request, post_id):
         try:
             post = Post.objects.get(id=post_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # TODO auth
         serializer = PostSerializer(post, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
