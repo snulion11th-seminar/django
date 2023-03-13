@@ -29,7 +29,6 @@ def CreatePostView(request):
 
 #CBV without serializer
 class PostListView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request):
         posts = Post.objects.all()
         contents = [{"id":post.id,
@@ -56,7 +55,6 @@ class PostListView(APIView):
         
 
 class PostDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request, post_id):
         try:
             post = Post.objects.get(id=post_id)
@@ -100,7 +98,6 @@ class PostDetailView(APIView):
 
 # CBV with serializer
 class PostListView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request):
         posts = Post.objects.all()
         serializer = PostSerializer(posts, many=True)
@@ -116,7 +113,6 @@ class PostListView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class PostDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request, post_id):
         try:
             post = Post.objects.get(id=post_id)
