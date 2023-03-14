@@ -4,7 +4,7 @@ from rest_framework import status, permissions
 
 from .models import Post
 from .serializers import PostSerializer
-# CBV with serializer
+
 class PostListView(APIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request):
