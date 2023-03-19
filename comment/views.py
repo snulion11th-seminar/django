@@ -16,7 +16,7 @@ class CommentListView(APIView):
             return Response({"detail": "missing fields ['post']"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-          comments = Comment.objects.get(post_id=post_id)
+            comments = Comment.objects.get(post_id=post_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
@@ -24,20 +24,20 @@ class CommentListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-          # TODO auth
-          author = request.user
-          post_id = request.data.get('post')
-          content = request.data.get('content')
+        # TODO auth
+        author = request.user
+        post_id = request.data.get('post')
+        content = request.data.get('content')
 
-          if not post_id or not content:
-              return Response({"detail": "missing fields ['post', 'content']"}, status=status.HTTP_400_BAD_REQUEST)
-          
-          if len(Post.objects.filter(post_id=post_id)) == 0:
-              return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-          
-          comment = Comment.objects.create(post_id=post_id, author=author, content=content)
-          serializer = CommentSerializer(comment)
-          return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if not post_id or not content:
+            return Response({"detail": "missing fields ['post', 'content']"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if len(Post.objects.filter(post_id=post_id)) == 0:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        comment = Comment.objects.create(post_id=post_id, author=author, content=content)
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class CommentDetailView(APIView):
     def patch(self, request, comment_id):
