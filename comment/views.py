@@ -50,7 +50,7 @@ class CommentDetailView(APIView):
         if len(comment) == 0:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        serializer = CommentSerializer(comment, data=request.data, partial=True)
+        serializer = CommentSerializer(comment[0], data=request.data, partial=True)
         if not serializer.is_valid():
             return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
         
