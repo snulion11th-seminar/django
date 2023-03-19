@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'post',
     'account',
+    'tag',
     'rest_framework_simplejwt',
     "rest_framework_simplejwt.token_blacklist"
 ]
