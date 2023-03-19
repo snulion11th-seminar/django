@@ -153,12 +153,14 @@ class PostDetailView(APIView):
 # 7th week(ManyToMany Field_Like)
 class LikeView(APIView):
     def get(self, request, post_id):
-        post = Post.objects.get(id=post_id)
-        print('A')
-        like_list = post.like_set.filter(user_id=request.user.id)
-        print('B')
-        if like_list.count() > 0:
-            post.like_set.get(user=request.user).delete()
+        if request.user.is_authenticated:
+            post = Post.objects.get(id=post_id)
+            serializer = PostSerializer(instance=post)
+            like_list = post.like_set.filter(user_id=request.user.id).all()
+            if like_list.count() > 0:
+                post.like_set.get(user=request.user).delete()
+            else:
+                Like.objects.create(user=request.user, post=post)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            Like.objects.create(user=request.user, post=post)
-        
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
