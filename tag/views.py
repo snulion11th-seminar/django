@@ -20,16 +20,27 @@ class TagListView(APIView):
       return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
 
     content = request.data.get('content')
+    author = request.user
     if not content:
       return Response({"detail": "missing fields ['content']"}, status=status.HTTP_400_BAD_REQUEST)
 
     if Tag.objects.filter(content=content).exists():
       return Response({"detail" : "이미 존재하는 태그입니다."}, status=status.HTTP_409_CONFLICT)
 
-    tag = Tag.objects.create(content=content)
+    tag = Tag.objects.create(content=content, author=author)
     serializer = TagSerializer(tag)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class TagDeleteView(APIView):
   def delete(self, request, tag_id):
-    pass
+    # TODO auth
+    try:
+      tag = Tag.objects.get(id=tag_id)
+    except:
+      return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    if request.user == tag.author:
+      tag.delete()
+    else:
+      return Response({"detail": "작성자만 삭제가 가능합니다."}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response(status=status.HTTP_204_NO_CONTENT)
