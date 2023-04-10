@@ -9,7 +9,6 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.tokens import AccessToken
 
 def generate_token_in_serialized_data(user:User, user_profile:UserProfile) -> UserSerializer.data:
     token = RefreshToken.for_user(user)
@@ -62,16 +61,6 @@ class LogoutView(APIView):
             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
         RefreshToken(request.data['refresh']).blacklist()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-# class TokenRefreshView(APIView):        
-#     def post(self, request):
-#         if not request.user.is_authenticated:
-#             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
-#         try:
-#             refreshedToken = RefreshToken(request.data['refresh']).access_token
-#         except:
-#             return Response({"detail": "Invalide refresh token"}, status=status.HTTP_400_BAD_REQUEST)
-#         return Response(refreshedToken, status=status.HTTP_200_OK)
     
 class TokenRefreshView(APIView):
     def post(self, request, format=None):
