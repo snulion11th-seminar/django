@@ -35,7 +35,7 @@ class SignupView(APIView):
 #### 3
         user_serialier = UserSerializer(data=request.data)
         if user_serialier.is_valid(raise_exception=True):
-            user = user_serialier.save()
+            user = user_serialier.save()    
             
         user_profile = UserProfile.objects.create(
             user=user,
@@ -64,15 +64,16 @@ class LogoutView(APIView):
     
 class TokenRefreshView(APIView):
     def post(self, request, format=None):
-        refresh_token = request.data["refresh"]
+        refresh_token = request.COOKIES.get('refresh_token')
         if not request.user.is_authenticated:
             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
         if refresh_token:
             try:
-                refresh_token = RefreshToken(refresh_token)
-                refresh_token.verify()
-                access_token = refresh_token.access_token
-                return Response({"access": str(access_token)}, status=status.HTTP_200_OK)
+                RefreshToken(refresh_token).verify()
+                access_token = RefreshToken(refresh_token).access_token
+                res = Response(status=status.HTTP_200_OK)
+                res.set_cookie('access_token', value=str(access_token), httponly=True)
+                return res
             except:
                 return Response({"detail": 'Invalid refresh token.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"detail": 'Enter refresh token.'}, status=status.HTTP_400_BAD_REQUEST)
