@@ -69,3 +69,16 @@ class LogoutView(APIView):
             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
         RefreshToken(request.data['refresh']).blacklist()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RefreshView(APIView):
+    def post(self, request):
+        refresh_token = request.data['refresh']
+        try:
+            token = RefreshToken(refresh_token)
+        except:
+            return Response({"detail": "토큰이 만료되었습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        res = Response(status=status.HTTP_200_OK)
+        res.set_cookie('access_token', value=str(
+            token.access_token), httponly=True)
+        return res
