@@ -89,7 +89,7 @@ class NewtokenView(APIView):
     def post(self, request):
         try:
             refreshToken = request.data['refresh_token']
-            newAccessToken = RefreshToken(refreshToken)
+            newAccessToken = RefreshToken(refreshToken).access_token
         except:
             return Response({'not valid refresh token'},status=status.HTTP_401_UNAUTHORIZED)
         
