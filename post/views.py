@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 
-from .models import Post
+from .models import Post, Like
 from .serializers import PostSerializer
 
 class PostListView(APIView):
@@ -55,3 +55,18 @@ class PostDetailView(APIView):
             return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+# 7th week(ManyToMany Field_Like)
+class LikeView(APIView):
+    def get(self, request, post_id):
+        if request.user.is_authenticated:
+            post = Post.objects.get(id=post_id)
+            serializer = PostSerializer(instance=post)
+            like_list = post.like_set.filter(user_id=request.user.id).all()
+            if like_list.count() > 0:
+                post.like_set.get(user=request.user).delete()
+            else:
+                Like.objects.create(user=request.user, post=post)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
