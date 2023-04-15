@@ -16,12 +16,14 @@ class PostListView(APIView):
         title = request.data.get('title')
         content = request.data.get('content')
         author = request.user
-        tags = request.data.get('tags')
+        tag_ids = request.data.get('tags')
+        
         if not title or not content:
             return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
 
         # TODO auth
         post = Post.objects.create(title=title, content=content, author=author)
+        post.tags.set(tag_ids)
         serializer = PostSerializer(post)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
