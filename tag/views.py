@@ -1,12 +1,12 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import Tag
-from .serializers import TagSerializer
 from post.models import Post
 from post.serializers import PostSerializer
 
+from .models import Tag
+from .serializers import TagSerializer
 
 
 # Create your views here.
@@ -17,11 +17,7 @@ class TagListView(APIView):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
   def post(self, request):
-    author = request.user
     content = request.data.get('content')
-
-    if not request.user.is_authenticated:
-      return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
     
     if not content:
       return Response({"detail": "missing fields ['content']"}, status=status.HTTP_400_BAD_REQUEST)
@@ -29,7 +25,7 @@ class TagListView(APIView):
     if Tag.objects.filter(content=content).exists():
       return Response({"detail" : "Tag with same content already exists"}, status=status.HTTP_409_CONFLICT)
 
-    tag = Tag.objects.create(content=content, author=author)
+    tag = Tag.objects.create(content=content)
     serializer = TagSerializer(tag)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -43,15 +39,3 @@ class TagDetailView(APIView):
     posts = Post.objects.filter(tags=tag_id)
     serializer = PostSerializer(instance=posts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
-
-  def delete(self, request, tag_id):
-    try:
-      tag = Tag.objects.get(id=tag_id)
-    except:
-      return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-    
-    if request.user != tag.author:
-      return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
-    
-    tag.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
