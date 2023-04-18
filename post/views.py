@@ -3,12 +3,13 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import Post, Like
-from .serializers import PostSerializer
+from tag.models import Tag
+from .serializers import PostSerializer, PostTagSerializer
 
 class PostListView(APIView):
     def get(self, request):
         posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
+        serializer = PostTagSerializer(posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -25,6 +26,10 @@ class PostListView(APIView):
         if not title or not content:
             return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
 
+        for tag_id in tag_ids:
+            if not Tag.objects.filter(tag_id).exists():
+                return Response({"detail": "Provided tag not found."}, status=status.HTTP_404_NOT_FOUND)
+
         post = Post.objects.create(title=title, content=content, author=author)
         post.tags.set(tag_ids)
         serializer = PostSerializer(post)
@@ -37,7 +42,7 @@ class PostDetailView(APIView):
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        serializer = PostSerializer(post)
+        serializer = PostTagSerializer(post)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, post_id):
