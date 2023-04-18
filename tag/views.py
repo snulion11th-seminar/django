@@ -4,6 +4,9 @@ from rest_framework import status
 
 from .models import Tag
 from .serializers import TagSerializer
+from post.models import Post
+from post.serializers import PostSerializer
+
 
 
 # Create your views here.
@@ -30,7 +33,17 @@ class TagListView(APIView):
     serializer = TagSerializer(tag)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class TagDeleteView(APIView):
+class TagDetailView(APIView):
+  def get(self, request, tag_id):
+    try:
+      Tag.objects.get(id=tag_id)
+    except:
+      return Response({"detail": "Provided tag does not exist."})
+    
+    posts = Post.objects.filter(tags=tag_id)
+    serializer = PostSerializer(instance=posts, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
   def delete(self, request, tag_id):
     try:
       tag = Tag.objects.get(id=tag_id)
