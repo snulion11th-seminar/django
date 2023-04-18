@@ -1,7 +1,8 @@
-from pathlib import Path
+import os
 from datetime import timedelta
-import os, environ
+from pathlib import Path
 
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,6 +34,7 @@ INSTALLED_APPS = [
     'post',
     'account',
     'tag',
+    'comment',
     'rest_framework_simplejwt',
     "rest_framework_simplejwt.token_blacklist"
 ]
