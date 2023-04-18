@@ -11,15 +11,14 @@ from .serializers import CommentSerializer
 # Create your views here.
 class CommentListView(APIView):
     def get(self, request):
-        post_id = request.data.get('post')
+        post_id = request.GET.get('post')
         if not post_id:
             return Response({"detail": "missing fields ['post']"}, status=status.HTTP_400_BAD_REQUEST)
         
-        try:
-            comments = Comment.objects.get(post_id=post_id)
-        except:
+        if not Post.objects.filter(id=post_id).exists():
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        
+
+        comments = Comment.objects.filter(post_id=post_id)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
