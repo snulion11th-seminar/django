@@ -6,12 +6,9 @@ from .models import Post
 
 
 class PostSerializer(ModelSerializer):
+    tags = TagSerializer(many=True, read_only=True)
+
     class Meta:
         model = Post
         fields = "__all__"
 
-class PostTagSerializer(ModelSerializer):
-    tags = TagSerializer(many=True, read_only=True)
-    class Meta:
-        model = Post
-        fields = "__all__"
