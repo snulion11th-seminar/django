@@ -1,8 +1,7 @@
-from blogpost.models import Post
+from post.models import Post
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-
 
 # Create your models here.
 class Comment(models.Model):
