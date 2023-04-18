@@ -1,48 +1,52 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status
 
 from .models import Post, Like
 from .serializers import PostSerializer
 
 class PostListView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request):
         posts = Post.objects.all()
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
+        author = request.user
         title = request.data.get('title')
         content = request.data.get('content')
-        author = request.user
         tag_ids = request.data.get('tags')
+
+        if not author.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         
         if not title or not content:
             return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # TODO auth
         post = Post.objects.create(title=title, content=content, author=author)
         post.tags.set(tag_ids)
         serializer = PostSerializer(post)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class PostDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request, post_id):
         try:
             post = Post.objects.get(id=post_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
         serializer = PostSerializer(post)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, post_id):
-        # TODO auth
         try:
             post = Post.objects.get(id=post_id)
         except:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)        
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)    
+        
+        if request.user != post.author:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
@@ -53,7 +57,9 @@ class PostDetailView(APIView):
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        # TODO auth
+        if request.user != post.author:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
+
         serializer = PostSerializer(post, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
@@ -63,14 +69,20 @@ class PostDetailView(APIView):
 # 7th week(ManyToMany Field_Like)
 class LikeView(APIView):
     def get(self, request, post_id):
-        if request.user.is_authenticated:
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        try:
             post = Post.objects.get(id=post_id)
-            serializer = PostSerializer(instance=post)
-            like_list = post.like_set.filter(user_id=request.user.id).all()
-            if like_list.count() > 0:
-                post.like_set.get(user=request.user).delete()
-            else:
-                Like.objects.create(user=request.user, post=post)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        like_list = post.like_set.filter(user=request.user)
+
+        if like_list.count() > 0:
+            post.like_set.get(user=request.user).delete()
         else:
-            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+            Like.objects.create(user=request.user, post=post)
+
+        serializer = PostSerializer(instance=post)
+        return Response(serializer.data, status=status.HTTP_200_OK)

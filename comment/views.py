@@ -24,15 +24,17 @@ class CommentListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        # TODO auth
         author = request.user
         post_id = request.data.get('post')
         content = request.data.get('content')
 
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+
         if not post_id or not content:
             return Response({"detail": "missing fields ['post', 'content']"}, status=status.HTTP_400_BAD_REQUEST)
         
-        if len(Post.objects.filter(post_id=post_id)) == 0:
+        if not Post.objects.filter(post_id=post_id).exists():
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
         comment = Comment.objects.create(post_id=post_id, author=author, content=content)
@@ -41,28 +43,37 @@ class CommentListView(APIView):
 
 class CommentDetailView(APIView):
     def patch(self, request, comment_id):
-        # TODO auth
         content = request.data.get('content')
+
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if request.user != comment.author:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
+
         if not content:
             return Response({"detail": "missing fields ['content']"}, status=status.HTTP_400_BAD_REQUEST)
 
-        comment = Comment.objects.filter(id=comment_id)
-        if len(comment) == 0:
+        try:
+            comment = Comment.objects.get(id=comment_id)
+        except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        serializer = CommentSerializer(comment[0], data=request.data, partial=True)
+        serializer = CommentSerializer(comment, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
-        
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def delete(self, request, comment_id):
-        # TODO auth
-        comment = Comment.objects.filter(id=comment_id)
-        if len(comment) == 0:
+        try:
+            comment = Comment.objects.get(id=comment_id)
+        except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-            
+
+        if request.user != comment.author:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
+
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
         
