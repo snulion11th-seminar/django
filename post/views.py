@@ -18,11 +18,9 @@ class PostListView(APIView):
         content = request.data.get('content')
         tag_ids = request.data.get('tags')
 
-
         if not author.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         
-
         if not title or not content:
             return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
 

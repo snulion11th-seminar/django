@@ -9,7 +9,6 @@ from .models import Tag
 from .serializers import TagSerializer
 
 
-# Create your views here.
 class TagListView(APIView):
   def get(self, request):
     tags = Tag.objects.all()
