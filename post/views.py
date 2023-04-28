@@ -73,7 +73,7 @@ class PostDetailView(APIView):
 
 # 7th week(ManyToMany Field_Like)
 class LikeView(APIView):
-    def get(self, request, post_id):
+    def post(self, request, post_id):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         
