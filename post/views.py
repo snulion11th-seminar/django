@@ -3,8 +3,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework import status
-from .models import Post
+from .models import Post, Like
 from .serializers import PostSerializer
+from tag.models import Tag
 
 @api_view(['POST'])
 def CreatePostView(request):
@@ -32,11 +33,19 @@ class PostListView(APIView):
         
 
     def post(self, request):
+        author = request.user
         title = request.data.get('title')
         content = request.data.get('content')
+        tag_ids = request.data.get('tags')
+        if not author.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         if not title or not content:
             return Response({"detail": "[title, content] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-        post = Post.objects.create(title=title, content=content)
+        for tag_id in tag_ids:
+            if not Tag.objects.filter(id=tag_id).exists():
+                return Response({"detail": "Provided tag not found."}, status=status.HTTP_404_NOT_FOUND)
+        post = Post.objects.create(title=title, content=content, author=author)
+        post.tags.set(tag_ids) # post와 tag를 연결(django 자동 중계 테이블 연결)
         serializer = PostSerializer(post)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
@@ -54,6 +63,8 @@ class PostDetailView(APIView):
             post = Post.objects.get(id=post_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        if request.user != post.author:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -64,6 +75,8 @@ class PostDetailView(APIView):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         # post.title = request.data.get('title')
         # post.content = request.data.get('content')
+        if request.user != post.author:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             post.title = request.data.get('title')
             post.content = request.data.get('content')
@@ -71,24 +84,41 @@ class PostDetailView(APIView):
         except:
             return Response({"detail": "[title] field missing."}, status=status.HTTP_400_BAD_REQUEST)
         # post.save()
-        return Response({
-    "id":post.id,
-    "title":post.title,
-    "content":post.content,
-    "created_at":post.created_at
-    }, status=status.HTTP_200_OK)
+        serializer = PostSerializer(post)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     def patch(self, request, post_id):
         try:
             post = Post.objects.get(id=post_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        if request.user != post.author:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         post.title = request.data.get('title') or post.title
         post.content = request.data.get('content') or post.content
         post.save()
-        return Response({
-    "id":post.id,
-    "title": post.title,
-    "content": post.content,
-    "created_at": post.created_at
-    }, status=status.HTTP_200_OK)
+        serializer = PostSerializer(post)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+class LikeView(APIView):
+    def post(self, request, post_id):
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        ### 1 ###
+        try:
+            post = Post.objects.get(id=post_id)
+        except:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        ### 2 ###
+        like_list = post.like_set.filter(user=request.user) # post에서 like table에 like_set으로 역참조
+
+        ### 3 ###
+        if like_list.count() > 0:
+            post.like_set.get(user=request.user).delete() # 좋아요 취소
+        else:
+            Like.objects.create(user=request.user, post=post) # 좋아요 생성
+
+        serializer = PostSerializer(instance=post)
+        return Response(serializer.data, status=status.HTTP_200_OK)

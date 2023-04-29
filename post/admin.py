@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post   # 추가
+from .models import Post, Like
 
-admin.site.register(Post)  # 추가
-# Register your models here.
+admin.site.register(Post)
+admin.site.register(Like)
