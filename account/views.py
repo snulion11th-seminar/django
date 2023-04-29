@@ -37,7 +37,7 @@ class SignupView(APIView):
             college=college,
             major=major #orl을 통해서만 장고의db에 접근가능 
         )
-        return set_token_on_response_cookie(user)
+        return set_token_on_response_cookie(user, user_profile)
 #### 4
         # token = RefreshToken.for_user(user) 
         # #리프레쉬 토근 안에 유저 어쩌고 넣으면 토큰 발급(access랑 refresh토큰 둘다 발급!)
