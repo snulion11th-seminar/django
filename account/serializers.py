@@ -18,9 +18,14 @@ class UserProfileSerializer(ModelSerializer):
         fields = "__all__"
     
         def validate(self, attrs):
-          username = attrs.get('username', '')
-          password = attrs.get('password', '')
-          email = attrs.get('email', '')
-          if not (username and password and email):
-              raise ValidationError({"detail": "[email, password, username] fields missing."})
-          return attrs
+            username = attrs.get('username', '')
+            password = attrs.get('password', '')
+            email = attrs.get('email', '')
+            if not (username and password and email):
+                raise ValidationError({"detail": "[email, password, username] fields missing."})
+            return attrs
+
+class UserIdUsernameSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username"]
