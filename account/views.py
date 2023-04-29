@@ -66,8 +66,10 @@ class LogoutView(APIView):
     
 class RefreshView(APIView):
     def post(self, request):
+        token = RefreshToken(request.data['refresh'])
         try:
             token = RefreshToken(request.data['refresh'])
+            # token.verify()
         except:
             return Response({"detail": "Wrong Refresh Token!."}, status=status.HTTP_401_UNAUTHORIZED)
         res = Response({"detail":"Access Token Refreshed"}, status=status.HTTP_200_OK)
