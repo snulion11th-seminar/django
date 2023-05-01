@@ -1,4 +1,6 @@
+from itertools import count
 from django.shortcuts import render
+from django.db.models import Count
 
 # FBV: 이거 안 씀.
 
@@ -33,9 +35,9 @@ from rest_framework import status
 from .serializers import PostSerializer
 
 class PostListView(APIView):
-		### 얘네가 class inner function 들! ###
+	### 얘네가 class inner function 들! ###
     def get(self, request): 
-        posts = Post.objects.all()
+        posts = Post.objects.all().annotate(num_likes=Count('like_users')).order_by('-num_likes')
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -80,20 +82,6 @@ class PostDetailView(APIView):
         
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    # def put(self, request, post_id):
-    #     try:
-    #         post = Post.objects.get(id=post_id)
-    #         # post.title = request.data.get('title')
-    #         # post.content = request.data.get('content')
-    #     except:
-    #         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-    #     serializer = PostSerializer(post, data=request.data)
-
-    #     if (serializer.is_valid()):
-    #       serializer.save()
-    #       return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request, post_id):
         try:

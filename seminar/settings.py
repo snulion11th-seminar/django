@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'post',
     'account',
     'tag',
+    'comment',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
 ]
@@ -150,7 +151,7 @@ REST_FRAMEWORK = {
 REST_USE_JWT = True
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30), ### 1
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=300), ### 1
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1), ### 1
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
