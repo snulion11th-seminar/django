@@ -20,10 +20,6 @@ def generate_token_in_serialized_data(user:User, user_profile:UserProfile) -> Us
     serialized_data['token']={"access":access_token, "refresh":refresh_token}
     return serialized_data
 
-
-
-
-
 def set_token_on_response_cookie(user: User) -> Response:
     token = RefreshToken.for_user(user)
     user_profile = UserProfile.objects.get(user=user)
@@ -33,7 +29,6 @@ def set_token_on_response_cookie(user: User) -> Response:
     res.set_cookie('access_token', value=str(token.access_token), httponly=True)
     return res
 
-
 def refresh_access_token_in_cookie(user: User):
     user_profile = UserProfile.objects.get(user=user)
     token = str(AccessToken.for_user(user))
@@ -42,10 +37,6 @@ def refresh_access_token_in_cookie(user: User):
     res = Response(serialized_data, status=status.HTTP_200_OK)
     res.set_cookie('access_token', value=str(token), httponly=True)
     return res
-
-
-
-
 
 class RefreshView(APIView):
 
