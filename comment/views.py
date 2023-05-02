@@ -65,6 +65,9 @@ class CommentDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def delete(self, request, comment_id):
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         try:
             comment = Comment.objects.get(id=comment_id)
         except:
