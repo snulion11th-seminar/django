@@ -47,6 +47,7 @@ class CommentListView(APIView):
     serializer = CommentSerializer(comment)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+  ##Only for revision
   ##3
   def put(self, request, comment_id):
 
