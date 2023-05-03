@@ -24,6 +24,7 @@ def set_token_on_response_cookie(user:User) -> Response:
 
 class SignupView(APIView):
     def post(self, request):
+        print(request.user)
         college=request.data.get('college')
         major=request.data.get('major')
 
@@ -62,11 +63,11 @@ class TokenRefreshView(APIView):
         refresh_token = request.data['refresh']
         try:
             RefreshToken(refresh_token).verify()
-            is_refresh_token_not_blacklisted = True
+            is_refresh_token_blacklisted = True
         except:
-            is_refresh_token_not_blacklisted = False
+            is_refresh_token_blacklisted = False
         if not is_access_token_valid :  
-            if not is_refresh_token_not_blacklisted:
+            if not is_refresh_token_blacklisted:
                 return Response({"detail": "login 을 다시 해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 new_access_token = str(RefreshToken(refresh_token).access_token)
