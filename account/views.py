@@ -51,9 +51,9 @@ class SignupView(APIView):
 
         return set_token_on_response_cookie(user,user_profile)
 #### 4
-        serialized_data = generate_token_in_serialized_data(user, user_profile)
+        #serialized_data = generate_token_in_serialized_data(user, user_profile)
 #### 5
-        return Response(serialized_data, status=status.HTTP_201_CREATED)
+        #return Response(serialized_data, status=status.HTTP_201_CREATED)
     
 
 class SigninView(APIView):

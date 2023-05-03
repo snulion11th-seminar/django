@@ -43,7 +43,8 @@ class PostListView(APIView):
 		### 얘네가 class inner function 들! ###
     def get(self, request): 
         posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
+        ordered_posts = posts.order_by('-like_users')
+        serializer = PostSerializer(ordered_posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
 
@@ -127,3 +128,4 @@ class LikeView(APIView):
 
         serializer = PostSerializer(instance=post)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
