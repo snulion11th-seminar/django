@@ -11,36 +11,32 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 from .serializers import UserSerializer,UserProfileSerializer
 from .models import UserProfile
 
-def generate_token_in_serialized_data(user:User) -> str:
+def set_token_on_response_cookie(user:User) -> Response:
     token = RefreshToken.for_user(user)
-    refresh_token, access_token = str(token), str(token.access_token)
-    serialized_data = UserSerializer(user).data
-    serialized_data['token']={"access":access_token, "refresh":refresh_token}
-    return serialized_data
+    user_profile = UserProfile.objects.get(user=user)
+    user_profile_serializer = UserProfileSerializer(user_profile)
+    res = Response(user_profile_serializer.data, status=status.HTTP_200_OK)
+    res.set_cookie('refresh_token', value=str(token), httponly=True)
+    res.set_cookie('access_token', value=str(token.access_token), httponly=True)
+    return res
+
+
 
 class SignupView(APIView):
     def post(self, request):
-        email=request.data.get("email")
-        username=request.data.get('username')
-        password=request.data.get('password')
         college=request.data.get('college')
         major=request.data.get('major')
-        if not email or not username or not password:
-            return Response({"detail": "[email, password, username] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-        elif User.objects.filter(username=username):
-            return Response({"detail": "user already exists."}, status=status.HTTP_403_FORBIDDEN)
-        user = User.objects.create(
-            email=email,
-            username=username,
-            password=password
-            )
+
+        user_serialier = UserSerializer(data=request.data)
+        if user_serialier.is_valid(raise_exception=True):
+            user = user_serialier.save()
+            
         user_profile = UserProfile.objects.create(
             user=user,
             college=college,
             major=major
-        )
-        serialized_data = generate_token_in_serialized_data(user)
-        return Response(serialized_data, status=status.HTTP_201_CREATED)
+        ) 
+        return set_token_on_response_cookie(user)
         
 class SigninView(APIView):
     def post(self, request):
@@ -51,35 +47,27 @@ class SigninView(APIView):
             )
         except:
             return Response({"detail": "아이디 또는 비밀번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
-        serialized_data = generate_token_in_serialized_data(user)
-        return Response(serialized_data, status=status.HTTP_200_OK)
+        return set_token_on_response_cookie(user)
         
 class LogoutView(APIView):
     def post(self, request):
         if not request.user.is_authenticated:
             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
         RefreshToken(request.data['refresh']).blacklist()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)      
         
 class TokenRefreshView(APIView):
     def post(self, request):
-        if not request.user.is_authenticated:
-            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
-        elif not RefreshToken(request.data['refresh']).verify():
-            return Response({"detail": "refresh token 이 blacklist 에 있습니다."}, status=status.HTTP_401_UNAUTHORIZED)
-        user = request.user
-        token = AccessToken.for_user(user)
-        access_token = str(token)
-        return Response({"access": access_token}, status=status.HTTP_200_OK)
-        
-class ProfileUpdateView(APIView):
-    def patch(self, request):
-        if not request.user.is_authenticated:
-            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
-        user = request.user
-        profile = UserProfile.objects.get(user=user)
-        serializer = UserProfileSerializer(profile, data=request.data, partial=True) 
-        if not serializer.is_valid():
-            return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        is_access_token_valid = request.user.is_authenticated
+        is_refresh_token_not_blacklisted = RefreshToken(request.data['refresh']).verify()
+        if not is_access_token_valid :
+            if not is_refresh_token_not_blacklisted:
+                return Response({"detail": "login 을 다시 해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                new_access_token = str(RefreshToken(request.data['refresh']).access_token)
+        else:
+            user = request.user
+            token = AccessToken.for_user(user)
+            new_access_token = str(token)
+        response = Response({"detail": "token refreshed"}, status=status.HTTP_200_OK)
+        return response.set_cookie('access_token', value=str(new_access_token), httponly=True)
