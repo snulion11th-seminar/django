@@ -59,12 +59,17 @@ class LogoutView(APIView):
 class TokenRefreshView(APIView):
     def post(self, request):
         is_access_token_valid = request.user.is_authenticated
-        is_refresh_token_not_blacklisted = RefreshToken(request.data['refresh']).verify()
-        if not is_access_token_valid :
+        refresh_token = request.data['refresh']
+        try:
+            RefreshToken(refresh_token).verify()
+            is_refresh_token_not_blacklisted = True
+        except:
+            is_refresh_token_not_blacklisted = False
+        if not is_access_token_valid :  
             if not is_refresh_token_not_blacklisted:
                 return Response({"detail": "login 을 다시 해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
             else:
-                new_access_token = str(RefreshToken(request.data['refresh']).access_token)
+                new_access_token = str(RefreshToken(refresh_token).access_token)
         else:
             user = request.user
             token = AccessToken.for_user(user)
