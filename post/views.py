@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from .serializers import PostSerializer
 from tag.models import Tag
+from django.db.models import Count
+
 
 # Create your views here.
 
@@ -26,6 +28,7 @@ class PostListView(APIView):
 		### 얘네가 class inner function 들! ###
     def get(self, request): 
         posts = Post.objects.all()
+        posts = posts.annotate(like_count=Count('like_users')).order_by('-like_count')
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
