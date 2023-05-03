@@ -13,7 +13,6 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 
 def generate_token_in_serialized_data(user:User, user_profile:UserProfile) -> UserSerializer.data:
@@ -23,7 +22,7 @@ def generate_token_in_serialized_data(user:User, user_profile:UserProfile) -> Us
     serialized_data['token']={"access":access_token, "refresh":refresh_token}
     return serialized_data
 
-def set_token_on_response_cookie(user: User) -> Response:
+def set_token_on_response_cookie(user: User, user_profile: UserProfile) -> Response:
     token = RefreshToken.for_user(user)
     user_profile = UserProfile.objects.get(user=user)
     user_profile_serializer = UserProfileSerializer(user_profile)
@@ -66,7 +65,10 @@ class SigninView(APIView):
             )
         except:
             return Response({"detail": "아이디 또는 비밀번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
-        return set_token_on_response_cookie(user)
+        
+        user_profile = UserProfile.objects.get(user=user)
+
+        return set_token_on_response_cookie(user, user_profile)
 
 class LogoutView(APIView):
     def post(self, request):
