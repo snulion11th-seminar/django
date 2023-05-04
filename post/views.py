@@ -104,9 +104,19 @@ class LikeView(APIView):
 
         ### 3 ###
         if like_list.count() > 0:
+            print(post.like_count)
+            post.like_count -= 1
             post.like_set.get(user=request.user).delete()
         else:
             Like.objects.create(user=request.user, post=post)
+            print(post.like_count)
+            post.like_count += 1
+        post.save()
 
         serializer = PostSerializer(instance=post)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class OrderView(APIView):
+    def get(self, request):
+        posts = Post.objects.all().order_by('-like_count')
+        serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

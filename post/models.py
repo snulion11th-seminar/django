@@ -14,6 +14,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     like_users = models.ManyToManyField(User, blank=True, related_name='like_posts', through='Like')
     tags = models.ManyToManyField(Tag, blank=True, related_name='posts')
+    like_count = models.IntegerField(default= 0)
     def __str__(self):
         return self.title
     
