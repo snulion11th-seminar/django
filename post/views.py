@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from .serializers import PostSerializer
 from tag.models import Tag
+from django.db.models import Count
 
 @csrf_exempt
 @api_view(['POST'])
@@ -29,10 +30,9 @@ from rest_framework import status
 
 class PostListView(APIView):
     def get(self, request): 
-        posts = Post.objects.all()
+        posts = Post.objects.annotate(like_count=Count('like')).order_by('-like_count')
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        
 
     def post(self, request):
         author = request.user
