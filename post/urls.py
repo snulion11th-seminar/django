@@ -8,6 +8,6 @@ urlpatterns = [
     path("see_post/", ReadAllPostView),
     path("", PostListView.as_view()),
     path("<int:post_id>/", PostDetailView.as_view()),
-    path("<int:post_id>/like/", LikeView.as_view())
+    path("<int:post_id>/like/", LikeView.as_view()),
 ]  
 

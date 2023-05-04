@@ -144,3 +144,4 @@ class LikeView(APIView):
 
         serializer = PostSerializer(instance=post)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
