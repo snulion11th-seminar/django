@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from tag.models import Tag
 
+
 class Post(models.Model):
     like_users = models.ManyToManyField(User, blank=True, related_name='like_posts', through='Like')
     title = models.CharField(max_length=256) #제목 길이
