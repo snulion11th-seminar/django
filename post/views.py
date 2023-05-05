@@ -19,20 +19,20 @@ class PostListView(APIView):
         author = request.user
         title = request.data.get('title')
         content = request.data.get('content')
-        tag_ids = request.data.get('tags')
+        tags = request.data.get('tags')
 
         if not author.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         if not title or not content:
             return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-
-        for tag_id in tag_ids:
-            if not Tag.objects.filter(tag_id).exists():
+        for tag in tags:
+            if not Tag.objects.filter(content=tag).exists():
                 return Response({"detail": "Provided tag not found."}, status=status.HTTP_404_NOT_FOUND)
-
         post = Post.objects.create(title=title, content=content, author=author)
-        post.tags.set(tag_ids)
+
+        for tag in tags:
+            tag_id_list = Tag.objects.filter(content=tag)
+        post.tags.set(tag_id_list)
         serializer = PostSerializer(post)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
