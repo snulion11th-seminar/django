@@ -28,6 +28,7 @@ def ReadAllPostView(request):
 from rest_framework.views import APIView
 from rest_framework import status
 from .serializers import PostSerializer
+from django.db.models import Count
 
 class PostListView(APIView):
     # def count_likes(self, post):
@@ -35,6 +36,7 @@ class PostListView(APIView):
 		### 얘네가 class inner function 들! ###
     def get(self, request): 
         posts = Post.objects.all()
+        posts = Post.objects.annotate(total_count= Count('like')).order_by("-total_count")
         serializer = PostSerializer(posts, many=True)
         # for post in serializer.data:
         #     post['like_count'] = self.count_likes(Post.objects.get(pk=post))

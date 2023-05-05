@@ -6,8 +6,7 @@ from .models import Post
 class PostSerializer(ModelSerializer):
     author = UserIdUsernameSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
-    total_likes = SerializerMethodField()
     class Meta:
         model = Post
         fields = "__all__"
-        order = ['author']
+        order = ['total_likes']
