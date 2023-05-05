@@ -10,10 +10,12 @@ from rest_framework import status
 
 from .serializers import PostSerializer
 
+from django.db.models import Count
+
 class PostListView(APIView):
 
     def get(self, request): 
-        posts = Post.objects.all()
+        posts = Post.objects.all().annotate(like_cnt = Count('like_users')).order_by('-like_cnt')
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
