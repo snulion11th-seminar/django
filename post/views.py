@@ -30,21 +30,16 @@ from rest_framework import status
 from .serializers import PostSerializer
 
 class PostListView(APIView):
-
+    # def count_likes(self, post):
+    #     return post.like_user.filter(True).count()
 		### 얘네가 class inner function 들! ###
     def get(self, request): 
         posts = Post.objects.all()
         serializer = PostSerializer(posts, many=True)
+        # for post in serializer.data:
+        #     post['like_count'] = self.count_likes(Post.objects.get(pk=post))
         return Response(serializer.data, status=status.HTTP_200_OK)
-        # contents = [{"id":post.id,
-        #              "title":post.title,
-        #              "content":post.content,
-        #              "created_at":post.created_at
-        #              } for post in posts]
-        # return Response(contents, status=status.HTTP_200_OK)
-        
-        
-
+    
     def post(self, request):
         author = request.user
         title = request.data.get('title')

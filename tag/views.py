@@ -21,7 +21,7 @@ class TagListView(APIView):
 	### 2 ###
   def post(self, request):
     if not request.user.is_authenticated:
-            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+      return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
 
     content = request.data.get('content')
 

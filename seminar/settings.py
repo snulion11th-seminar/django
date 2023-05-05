@@ -154,6 +154,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'post',
     'account',
+    'comment',
     "tag" #추가, 늘여서 'post.apps.PostConfig'라고 적어도 된다는 비밀 아닌 비밀
 ]
 
