@@ -100,8 +100,7 @@ class PostDetailView(APIView):
         if not serializer.is_valid():
             return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)  
-         
+        return Response(serializer.data, status=status.HTTP_200_OK)         
 class LikeView(APIView):
     def post(self, request, post_id):
         if not request.user.is_authenticated:
