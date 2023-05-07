@@ -21,5 +21,6 @@ urlpatterns = [
     # post 의 urls들은 api/post/ 로 시작하겠다.
     path('api/post/', include('post.urls')),
     path('api/account/', include('account.urls')),
-    path('api/tag/', include('tag.urls'))
+    path('api/tag/', include('tag.urls')),
+    path('api/comment/', include('comment.urls'))
 ]

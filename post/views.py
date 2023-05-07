@@ -26,7 +26,7 @@ def CreatePostView(request):
 
 @api_view(['GET'])
 def ReadAllPostView(request):
-    posts = Post.objects.all()  # DB에 저장된 모든 게시글의 정보를 가져와서 list로 만들어줌
+    posts = Post.objects.all().order_by("id")  # DB에 저장된 모든 게시글의 정보를 가져와서 list로 만들어줌
     contents = [{post.title: post.content} for post in posts]
     return Response({"posts": contents})
 
@@ -37,16 +37,11 @@ class PostListView(APIView):
 
     ### 얘네가 class inner function 들! ###
     def get(self, request):
-        posts = Post.objects.all()
-
-        serializer = PostSerializer(posts, many=True)
+        ## Post.objects.all() -> 중복되어서 나옴 why?
+        unsorted_posts = Post.objects.all()
+        sorted_posts = sorted(unsorted_posts, key= lambda p: p.like_users.count(), reverse=True)
+        serializer = PostSerializer(instance=sorted_posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        # contents = [{"id": post.id,
-        #              "title": post.title,
-        #              "content": post.content,
-        #              "created_at": post.created_at
-        #              } for post in posts]
-        # return Response(contents, status=status.HTTP_200_OK)
 
     def post(self, request):
         author = request.user
