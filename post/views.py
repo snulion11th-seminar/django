@@ -30,7 +30,6 @@ class PostListView(APIView):
     def get(self, request): 
         posts = Post.objects.annotate(likes=Count('like_users')).order_by('-likes')
         # posts = Post.objects.all().order_by('-like_users')
-        print(posts)
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         

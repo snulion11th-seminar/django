@@ -28,9 +28,10 @@ class CommentListView(APIView):
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         if not author or not content:
             return Response({"detail": "[author, comment] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-        if not Post.objects.filter(id=post_id).exists():
+        try:
+            post = Post.objects.get(id=post_id)
+        except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        post = Post.objects.get(id=post_id)
         comment = Comment.objects.create(content=content, post=post, author=author)
         serializer = CommentSerializer(comment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -63,30 +64,17 @@ class CommentDetailView(APIView):
         author = request.user
         if not author.is_authenticated:
             return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        if comment.author != author:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             comment = Comment.objects.get(id=comment_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         try:
-            comment.content = request.data.get('content')
+            comment.content = request.data['content']
             comment.save()
         except:
             return Response({"detail": "missing fields ['content']"}, status=status.HTTP_400_BAD_REQUEST)
         # comment.save()
         serializer = CommentSerializer(comment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    # def patch(self, request, comment_id):
-    #     try:
-    #         comment = Comment.objects.get(id=comment_id)
-    #     except:
-    #         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-    #     comment.author = request.data.get('author') or comment.author
-    #     comment.comment = request.data.get('comment') or comment.comment
-    #     comment.save()
-    #     return Response({
-    # "id":comment.id,
-    # "author": comment.author,
-    # "comment": comment.comment,
-    # "created_at": comment.created_at
-    # }, status=status.HTTP_200_OK)
