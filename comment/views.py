@@ -18,7 +18,7 @@ class CommentListView(APIView):
       return Response({"detail": "missing fields['post]"}, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-      commentlist=Comment.objects.filter(post_id=post_id)
+      commentlist=Comment.objects.filter(post_id=post_id).exists()
     except:
       return Response({"detail": "Not Found."}, status=status.HTTP_404_NOT_FOUND)
     
