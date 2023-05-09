@@ -26,7 +26,7 @@ class CommentListView(APIView):
     #코멘트마다 입력되어있는 post번호가 지금 받아온것과 같은것만 필터링 해서 가져와
     serializer = CommentSerializer(instance=comments, many=True)
     #구문 문법에 맞게 직렬화해서 저장
-    print(post_id)
+    #print(post_id)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -53,6 +53,7 @@ class CommentDetailView(APIView):
     content = request.data.get('content')
     if not content:
       return Response({"detail": "missing fields ['content']"}, status=status.HTTP_400_BAD_REQUEST)
+    # if not request.user.is_authenticated:
     if request.user.is_anonymous:
       return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
     try:
