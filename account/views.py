@@ -16,8 +16,8 @@ def set_token_on_response_cookie(user:User) -> Response:
     user_profile = UserProfile.objects.get(user=user)
     user_profile_serializer = UserProfileSerializer(user_profile)
     res = Response(user_profile_serializer.data, status=status.HTTP_200_OK)
-    res.set_cookie('refresh_token', value=str(token), httponly=True)
-    res.set_cookie('access_token', value=str(token.access_token), httponly=True)
+    res.set_cookie('refresh_token', value=str(token))
+    res.set_cookie('access_token', value=str(token.access_token))
     return res
 
 

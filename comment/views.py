@@ -33,7 +33,7 @@ class CommentListView(APIView):
         if not post_id or not content:
             return Response({"detail": "missing fields ['post', 'content']"}, status=status.HTTP_400_BAD_REQUEST)
         
-        if not Post.objects.filter(post_id=post_id).exists():
+        if not Post.objects.filter(id=post_id).exists():
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
         comment = Comment.objects.create(post_id=post_id, author=author, content=content)
