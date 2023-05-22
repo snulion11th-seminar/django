@@ -47,9 +47,6 @@ class CommentDetailView(APIView):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if request.user != comment.author:
-            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
-
         if not content:
             return Response({"detail": "missing fields ['content']"}, status=status.HTTP_400_BAD_REQUEST)
 
