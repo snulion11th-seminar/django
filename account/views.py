@@ -5,7 +5,7 @@ from django.shortcuts import render
 #### 1
 from django.contrib.auth.models import User
 from .models import UserProfile
-from .serializers import UserSerializer,UserProfileSerializer
+from .serializers import UserIdUsernameSerializer, UserSerializer,UserProfileSerializer
 #### 2
 from rest_framework import status
 from rest_framework.views import APIView
@@ -24,8 +24,8 @@ def set_token_on_response_cookie(user: User) -> Response:
     user_profile = UserProfile.objects.get(user=user)
     user_profile_serializer = UserProfileSerializer(user_profile)
     res = Response(user_profile_serializer.data, status=status.HTTP_200_OK)
-    res.set_cookie('refresh_token', value=str(token), httponly=True)
-    res.set_cookie('access_token', value=str(token.access_token), httponly=True)
+    res.set_cookie('refresh_token', value=str(token))
+    res.set_cookie('access_token', value=str(token.access_token))
     return res
 
 
@@ -76,7 +76,7 @@ def set_token_on_access_cookie(user: User) -> Response:
     serialized_data = UserProfileSerializer(user_profile).data
     serialized_data['token'] = {"access":str(token)}
     res = Response(serialized_data['token'], status=status.HTTP_200_OK)
-    res.set_cookie('access_token', value=str(token), httponly=True)
+    res.set_cookie('access_token', value=str(token))
     return res
 
 
@@ -92,3 +92,11 @@ class RefreshView(APIView):
             return Response({"detail": "유저 정보(id or pw) 또는 refresh token을 다시 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
         
         return set_token_on_access_cookie(user)
+    
+
+class UserInfoView(APIView):
+    def get(self, request):
+        user = request.user
+        serializer = UserIdUsernameSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    

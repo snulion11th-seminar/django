@@ -45,7 +45,7 @@ class PostListView(APIView):
         author = request.user
         title = request.data.get('title')
         content = request.data.get('content')
-        tag_ids = request.data.get('tags')
+        tag_contents = request.data.get('tags')
 
         if not author.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -53,12 +53,14 @@ class PostListView(APIView):
         if not title or not content:
             return Response({"detail": "[title, content] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
         
-        for tag_id in tag_ids:
-            if not Tag.objects.filter(id=tag_id).exists():
-                return Response({"detail": "Provided tag not found."}, status=status.HTTP_404_NOT_FOUND)
-
         post = Post.objects.create(title=title, content=content, author=author)
-        post.tags.set(tag_ids)
+        
+        for tag_content in tag_contents:
+            if not Tag.objects.filter(content=tag_content).exists():
+                post.tags.create(content=tag_content)
+            else:
+                post.tags.add(Tag.objects.get(content=tag_content))
+        
         serializer = PostSerializer(post)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -84,6 +86,8 @@ class PostDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def patch(self, request, post_id):
+        tag_contents = request.data.get('tags')
+
         try:
             post = Post.objects.get(id=post_id)
         except:
@@ -91,6 +95,13 @@ class PostDetailView(APIView):
         
         if request.user != post.author:
             return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        post.tags.clear()
+        for tag_content in tag_contents:
+            if not Tag.objects.filter(content=tag_content).exists():
+                post.tags.create(content=tag_content)
+            else:
+                post.tags.add(Tag.objects.get(content=tag_content))
 
         serializer = PostSerializer(post, data=request.data, partial=True)
 
@@ -105,19 +116,16 @@ class LikeView(APIView):
     def post(self, request, post_id):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
-
-        ### 1 ###
+        
         try:
             post = Post.objects.get(id=post_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        ### 2 ###
+        
         like_list = post.like_set.filter(user=request.user)
 
-        ### 3 ###
-        if like_list.count() > 0: # 사실상 1 (좋아요 누른 적 있다면)
-            post.like_set.get(user=request.user).delete() # 좋아요 취소
+        if like_list.count() > 0:
+            post.like_set.get(user=request.user).delete()
         else:
             Like.objects.create(user=request.user, post=post)
 
