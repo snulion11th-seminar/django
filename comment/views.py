@@ -33,7 +33,7 @@ class CommentListView(APIView):
         if not post_id or not content:
             return Response({"detail": "missing fields ['post', 'content']"}, status=status.HTTP_400_BAD_REQUEST)
         
-        if not Post.objects.filter(post_id=post_id).exists():
+        if not Post.objects.filter(id=post_id).exists():
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
         comment = Comment.objects.create(post_id=post_id, author=author, content=content)
@@ -43,6 +43,10 @@ class CommentListView(APIView):
 class CommentDetailView(APIView):
     def patch(self, request, comment_id):
         content = request.data.get('content')
+        try:
+            comment = Comment.objects.get(id=comment_id)
+        except:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -53,10 +57,7 @@ class CommentDetailView(APIView):
         if not content:
             return Response({"detail": "missing fields ['content']"}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            comment = Comment.objects.get(id=comment_id)
-        except:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
         
         serializer = CommentSerializer(comment, data=request.data, partial=True)
         if not serializer.is_valid():
