@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from tag.serializers import TagSerializer
 from account.serializers import UserIdUsernameSerializer
 from .models import Post
@@ -9,3 +9,4 @@ class PostSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"
+        order = ['total_likes']

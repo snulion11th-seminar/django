@@ -5,7 +5,7 @@ from django.shortcuts import render
 #### 1
 from django.contrib.auth.models import User
 from .models import UserProfile
-from .serializers import UserSerializer,UserProfileSerializer
+from .serializers import UserSerializer,UserProfileSerializer, UserIdUsernameSerializer
 #### 2
 from rest_framework import status
 from rest_framework.views import APIView
@@ -26,8 +26,8 @@ def set_token_on_response_cookie(user: User) -> Response:
     user_profile = UserProfile.objects.get(user=user)
     user_profile_serializer = UserProfileSerializer(user_profile)
     res = Response(user_profile_serializer.data, status=status.HTTP_200_OK)
-    res.set_cookie('refresh_token', value=str(token), httponly=True)
-    res.set_cookie('access_token', value=str(token.access_token), httponly=True)
+    res.set_cookie('refresh_token', value=str(token))
+    res.set_cookie('access_token', value=str(token.access_token))
     return res
 
 class SignupView(APIView):
@@ -91,7 +91,15 @@ class Refresh(APIView):
             Refresh_Token = request.COOKIES.get('Refresh_Token')            
             NewAccessToken = RefreshToken(Refresh_Token).access_token
             resp=Response({"detail": "Access Token이 재발급되었습니다."}, status=status.HTTP_202_ACCEPTED)
-            resp.set_cookie('access_token', value=str(NewAccessToken), httponly=True)
+            resp.set_cookie('access_token', value=str(NewAccessToken))
         except:
             resp=Response({"detail": "잘못된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
         return resp
+    
+class UserInfoView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        serializer = UserIdUsernameSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
