@@ -52,35 +52,30 @@ class CommentListView(APIView) :
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 class CommentDetailView(APIView) :
-    def put(self, request, commentId) :
-        # 1. Check if commentId is valid
-        try :
-            comment = Comment.objects.get(id=commentId)
-        except :
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-        # 2. Check if the token exists
+    def patch(self, request, comment_id):
+        content = request.data.get('content')
+
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # 3. Check if the user is authorized(same as writer)
-        if comment.author != request.user :
-            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        # 4. Check if the data is not empty
-        content = request.data.get('content')
-        if not content :
+        if not content:
             return Response({"detail": "missing fields ['content']"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            comment = Comment.objects.get(id=comment_id)
+        except:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        # 5. update
-        comment.content=content
-        serializer = CommentSerializer(comment)
+        serializer = CommentSerializer(comment, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def delete(self, request, commentId) :
+    def delete(self, request, comment_id) :
         # 1. Check if commentId is valid
         try :
-            comment = Comment.objects.get(id=commentId)
+            comment = Comment.objects.get(id=comment_id)
         except :
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
