@@ -54,7 +54,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -134,11 +134,16 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Authentication classes
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES' : (
         'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
+				#수정
+        'rest_framework.authentication.TokenAuthentication',
+				#수정
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
@@ -149,13 +154,15 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',        
+    'django.contrib.staticfiles',   
+    'rest_framework',     
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'post',
     'account',
     'comment',
-    "tag" #추가, 늘여서 'post.apps.PostConfig'라고 적어도 된다는 비밀 아닌 비밀
+    "tag",
+    "corsheaders" #추가, 늘여서 'post.apps.PostConfig'라고 적어도 된다는 비밀 아닌 비밀
 ]
 
 
@@ -171,3 +178,22 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN': 'access_token',
     'REFRESH_TOKEN': 'refresh_token',
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:3000', 
+    'http://localhost:3000',
+]
+
+CORS_ALLOWED_ORIGINS= [ # (헤더) Access-Control-Allow-Origin 에 담을 주소들
+    'http://127.0.0.1:3000', 
+    'http://localhost:3000',
+]
+CORS_ALLOW_CREDENTIALS = True # cookie를 주고받으려면 얘를 True로 설정해야 해요.
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+)
