@@ -83,5 +83,19 @@ class UserInfoView(APIView):
         if not request.user.is_authenticated:
             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
         user = request.user
-        serializer = UserIdUsernameSerializer(user)
+        user_profile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(user_profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        user_profile = UserProfile.objects.get(user=user)
+        user_serializer = UserSerializer(user, data=request.data, partial=True)
+        user_profile_serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+        if user_serializer.is_valid(raise_exception=True):
+            user_serializer.save()
+        if user_profile_serializer.is_valid(raise_exception=True):
+            user_profile_serializer.save()
+        return Response(user_profile_serializer.data, status=status.HTTP_200_OK)
