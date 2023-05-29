@@ -11,20 +11,20 @@ class CommentListView(APIView):
     def get(self, request):
         query = request.GET['post']
         if not query:
-           return Response({"detail": "missing fields ['post']"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "missing fields ['post']"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-          comments = Comment.objects.filter(post_id=query)
+            comments = Comment.objects.filter(post_id=query)
         except:
-           return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
     def post(self, request):
         try:
-          post = Post.objects.get(id=request.data.get('post'))
+            post = Post.objects.get(id=request.data.get('post'))
         except:
-           return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         content = request.data.get('content')
         author = request.user
 
@@ -48,7 +48,7 @@ class CommentDetailView(APIView):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
         if not request.user.is_authenticated:
-          return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         if request.user != comment.author:
             return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         
