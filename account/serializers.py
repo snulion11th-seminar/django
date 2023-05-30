@@ -9,7 +9,7 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["username", "password", "email"]
+        fields = ["id", "username", "password", "email"]
 
         def validate(self, attrs):
             username = attrs.get('username', '')
@@ -26,7 +26,6 @@ class UserIdUsernameSerializer(ModelSerializer):
 
 class UserProfileSerializer(ModelSerializer):
     user = UserSerializer(read_only=True)
-
     class Meta:
         model = UserProfile
         fields = "__all__"

@@ -1,12 +1,13 @@
 #### 1
 from django.contrib.auth.models import User
 from .models import UserProfile
-from .serializers import UserSerializer,UserProfileSerializer
+from .serializers import UserSerializer,UserProfileSerializer, UserIdUsernameSerializer
 #### 2
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+
 
 def generate_token_in_serialized_data(user:User, user_profile:UserProfile) -> UserSerializer.data:
     token = RefreshToken.for_user(user)
@@ -20,9 +21,40 @@ def set_token_on_response_cookie(user: User) -> Response:
     user_profile = UserProfile.objects.get(user=user)
     user_profile_serializer = UserProfileSerializer(user_profile)
     res = Response(user_profile_serializer.data, status=status.HTTP_200_OK)
-    res.set_cookie('refresh_token', value=str(token), httponly=True)
-    res.set_cookie('access_token', value=str(token.access_token), httponly=True)
+    res.set_cookie('refresh_token', value=str(token))
+    res.set_cookie('access_token', value=str(token.access_token))
     return res
+
+class UserInfoView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        user_profile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(user_profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        email = request.data.get('email')
+        username = request.data.get('username')
+        college = request.data.get('college')
+        major = request.data.get('major')
+
+        user = request.user
+        
+        user.email = email
+        user.username = username
+        user.save()
+
+        try:
+            user_profile = UserProfile.objects.get(user=user)
+        except:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        user_profile.college = college
+        user_profile.major = major
+        user_profile.save()
+        return Response(UserProfileSerializer(user_profile).data, status=status.HTTP_200_OK)
 
 class SignupView(APIView):
     def post(self, request):
