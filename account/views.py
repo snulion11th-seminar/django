@@ -85,3 +85,25 @@ class UserInfoView(APIView):
         user = request.user
         serializer = UserIdUsernameSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class UserProfileView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        profile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        user = request.user
+        user_serializer = UserSerializer(user, data=request.data, partial=True)
+        if not user_serializer.is_valid(raise_exception=True):
+            return Response({"detail": "user data validation error"}, status=status.HTTP_400_BAD_REQUEST)
+        user_serializer.save()
+        profile = UserProfile.objects.get(user=user)
+        user_profile_serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        if not user_profile_serializer.is_valid(raise_exception=True):
+            return Response({"detail": "profile data validation error"}, status=status.HTTP_400_BAD_REQUEST)
+        user_profile_serializer.save()
+        return Response(user_profile_serializer.data, status=status.HTTP_200_OK)
