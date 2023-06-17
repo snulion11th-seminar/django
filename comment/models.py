@@ -11,3 +11,5 @@ class Comment(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     
+    def __str__(self):
+        return f'[post: {self.post}] {self.content}'
