@@ -1,59 +1,44 @@
-from django.shortcuts import render
-
-# Create your views here.
-#### 1
-from django.contrib.auth.models import User
-from .models import UserProfile
-from .serializers import UserSerializer,UserProfileSerializer
-#### 2
+# accounts/views.py
+from django.contrib.auth.models import User 
+from django.contrib import auth 
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated ##add
-from rest_framework_simplejwt.authentication import JWTAuthentication ##add
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 
+from .serializers import UserSerializer,UserProfileSerializer, UserIdUsernameSerializer
+from .models import UserProfile
 
-def generate_token_in_serialized_data(user:User) -> UserSerializer.data:
-    token = RefreshToken.for_user(user)
-    refresh_token, access_token = str(token), str(token.access_token)
-    serialized_data = UserProfileSerializer(user_profile).data
-    serialized_data['token']={"access":access_token, "refresh":refresh_token}
-    return serialized_data
-def set_token_on_response_cookie(user: User) -> Response:
+def set_token_on_response_cookie(user:User) -> Response:
     token = RefreshToken.for_user(user)
     user_profile = UserProfile.objects.get(user=user)
     user_profile_serializer = UserProfileSerializer(user_profile)
     res = Response(user_profile_serializer.data, status=status.HTTP_200_OK)
-    res.set_cookie('refresh_token', value=str(token), httponly=True)
-    res.set_cookie('access_token', value=str(token.access_token), httponly=True)
+    res.set_cookie('refresh_token', value=str(token))
+    res.set_cookie('access_token', value=str(token.access_token))
     return res
 
-#### view
+
+
 class SignupView(APIView):
     def post(self, request):
+        print(request.user)
         college=request.data.get('college')
         major=request.data.get('major')
 
-#### 3
-        user_serializer = UserSerializer(data=request.data)
-        #request에서 data를 가져올 때는 data= 을 명시해주어야 함
-        if user_serializer.is_valid(raise_exception=True):
-            user = user_serializer.save()
+        user_serialier = UserSerializer(data=request.data)
+        if user_serialier.is_valid(raise_exception=True):
+            user = user_serialier.save()
             
         user_profile = UserProfile.objects.create(
             user=user,
             college=college,
             major=major
-        )
+        ) 
         return set_token_on_response_cookie(user)
-    
-    
-#### 4
-        #serialized_data = generate_token_in_serialized_data(user, user_profile)
-#### 5
-        #return Response(serialized_data, status=status.HTTP_201_CREATED)
-
+        
 class SigninView(APIView):
     def post(self, request):
         try:
@@ -64,31 +49,72 @@ class SigninView(APIView):
         except:
             return Response({"detail": "아이디 또는 비밀번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
         return set_token_on_response_cookie(user)
-    
+        
 class LogoutView(APIView):
     def post(self, request):
-        print(request.user.is_authenticated)
         if not request.user.is_authenticated:
             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
         RefreshToken(request.data['refresh']).blacklist()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-class RefreshTokenView(APIView):
-
-    def post(self, request, *args, **kwargs):
-        refresh_token = request.data['refresh_token']
-        if not refresh_token:
-            return Response({'error': 'No refresh token provided'}, status=400)
-
-        #if not request.user.is_authenticated:
-        #    return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(status=status.HTTP_204_NO_CONTENT)      
         
-        
+class TokenRefreshView(APIView):
+    def post(self, request):
+        is_access_token_valid = request.user.is_authenticated
+        refresh_token = request.data['refresh']
         try:
-            refresh_token = RefreshToken(refresh_token)
-            access_token = refresh_token.access_token
-        except Exception as e:
-            return Response({'error': 'Invalid refresh token'}, status=400)
-        res = Response({'detail':'access_token is refreshed'}, status=200)
-        res.set_cookie('access_token', value=str(access_token), httponly=True)
-        return res
+            RefreshToken(refresh_token).verify()
+            is_refresh_token_blacklisted = True
+        except:
+            is_refresh_token_blacklisted = False
+        if not is_access_token_valid :  
+            if not is_refresh_token_blacklisted:
+                return Response({"detail": "login 을 다시 해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                new_access_token = str(RefreshToken(refresh_token).access_token)
+        else:
+            user = request.user
+            token = AccessToken.for_user(user)
+            new_access_token = str(token)
+        response = Response({"detail": "token refreshed"}, status=status.HTTP_200_OK)
+        return response.set_cookie('access_token', value=str(new_access_token))
+    
+class UserInfoView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        serializer = UserIdUsernameSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class MyPageView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        print(request.user)
+        user = request.user
+        profile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def patch(self, request):
+        try:
+
+            profile = UserProfile.objects.get(user=request.user)
+            user = {
+                "id": request.data['user']['id'],
+                "username": request.data['user']['username'],
+                "password": request.data['user']['password'],
+                "email": request.data['user']['email'],
+            }   
+            userSerializer = UserSerializer(request.user, data=user, partial = True)
+            profile.college = request.data['college']
+            profile.major = request.data['major']
+        except:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+        if not userSerializer.is_valid():
+            return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
+        userSerializer.save()
+        profile.save()
+
+        return Response(userSerializer.data, status=status.HTTP_200_OK)
