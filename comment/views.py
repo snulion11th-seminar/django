@@ -32,7 +32,7 @@ class CommentCreateView(APIView):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
   
 class CommentDetailView(APIView):
-  def put(self, request, comment_id):
+  def patch(self, request, comment_id):
     try: #try-except 구문
             comment = Comment.objects.get(id=comment_id) #quertyset
     except:
@@ -48,7 +48,8 @@ class CommentDetailView(APIView):
     comment.content = request.data.get('content')
     comment.save()
     serializer = CommentSerializer(comment)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    # return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.data, status=status.HTTP_200_OK)
   def delete(self, request, comment_id):
     try: #try-except 구문
             comment = Comment.objects.get(id=comment_id) #quertyset

@@ -32,18 +32,22 @@ class PostListView(APIView):		### 얘네가 class inner function 들! ###
   
     def post(self, request):
         author = request.user
-        tag_ids = request.data.get('tags')
+        tag_contents = request.data.get('tags')
         title = request.data.get('title')
         content = request.data.get('content')
         if not author.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         if not title or not content: # 미리 예상되는 문제에 대해서 분기 처리를 해두는 것이 좋다. 
             return Response({"detail": "[title, content] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-        for tag_id in tag_ids:
-            if not Tag.objects.filter(id=tag_id).exists():
-                return Response({"detail": "Provided tag not found."}, status=status.HTTP_404_NOT_FOUND)
+        
         post = Post.objects.create(title=title, content=content, author=author) # author 정보도 담아주쇼
-        post.tags.set(tag_ids)
+
+        for tag_content in tag_contents:
+            if not Tag.objects.filter(content == tag_content).exists():
+                post.tags.create(content=tag_content)
+            else:
+                post.tags.add(Tag.objects.GET(content=tag_content))
+
         serializer = PostSerializer(post)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -69,26 +73,59 @@ class PostDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def patch(self, request, post_id):
+        tag_contents = request.data.get("tags")
+
         try: #try-except 구문
             post = Post.objects.get(id=post_id) #quertyset
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
         if request.user != post.author:
             return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         title = request.data.get('title')
         content = request.data.get('content')
-        if title:
-            if title == post.title:
-                return Response({"Nothing to Update"})
-            post.title = request.data.get('title')
-        if content:
-            if content == content.title:
-                return Response({"Nothing to Update"})
-            post.content = request.data.get('content')
-        post.updated_at = timezone.localtime()
-        post.save()
-        serializer = PostSerializer(post)
-        return Response({"Success to Update!"}, status=status.HTTP_200_OK)
+
+        serializer = PostSerializer(post, data=request.data, partial=True)
+				
+		## 수정
+
+        tag_contents = request.data.get("tags")
+        #tag 쪽 없으면 create 있으면 add
+        post.tags.clear()  # 처음에는 clear
+        for tag_content in tag_contents:
+            if not Tag.objects.filter(
+                content=tag_content
+            ).exists():  
+                post.tags.create(content=tag_content)
+            post.tags.add(Tag.objects.get(content=tag_content))
+
+        ## 수정
+        if not serializer.is_valid():
+            return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+        # if title:
+        #     if title == post.title:
+        #         return Response({"Nothing to Update"})
+        #     post.title = request.data.get('title')
+        # if content:
+        #     if content == content.title:
+        #         return Response({"Nothing to Update"})
+        #     post.content = request.data.get('content')
+        # post.updated_at = timezone.localtime()
+
+        # post.tags.clear()
+        # for tag_content in tag_contents:
+        #     if not Tag.objects.filter(content == tag_content).exists():
+        #         post.tags.create(content=tag_content)
+        #     else:
+        #         post.tags.add(Tag.objects.GET(content=tag_content))
+
+        # post.save()
+        # serializer = PostSerializer(post)
+        # return Response({"Success to Update!"}, status=status.HTTP_200_OK)
     
 class LikeView(APIView):
     def post(self, request, post_id):
