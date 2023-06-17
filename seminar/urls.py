@@ -19,7 +19,9 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/post/', include('post.urls')),
-    path('api/account/', include('account.urls'))
+    path('api/account/', include('account.urls')),
+    path('api/tag/', include('tag.urls')),
+    path('api/comment/', include('comment.urls')),
 ]
 
 # url 통해서 api 에게 주기 때문에 이름을 다르게 해서 뷰를 불러야 하는데 그 이름이 url이 됨.
