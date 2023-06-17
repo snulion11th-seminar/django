@@ -6,7 +6,7 @@ from account.models import UserProfile
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "password", "email"]
+        fields = ["id", "username", "password", "email"]
         
 class UserProfileSerializer(ModelSerializer):
     user = UserSerializer(read_only=True)

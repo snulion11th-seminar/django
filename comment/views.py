@@ -17,8 +17,8 @@ class CommentListView(APIView):
         if not post_id:
             return Response({"detail": "missing fields ['post']"}, status=status.HTTP_400_BAD_REQUEST)
         comments = Comment.objects.filter(post_id=post_id)
-        if not comments:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        # if not comments:
+            # return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -43,7 +43,7 @@ class CommentListView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 class CommentDetailView(APIView):
-    def put(self, request, comment_id):
+    def patch(self, request, comment_id):
 
         author = request.user
         content = request.data.get('content')
@@ -64,7 +64,7 @@ class CommentDetailView(APIView):
         comment.content=content
         comment.save()
         serializer=CommentSerializer(comment)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     def delete(self, request, comment_id):
         author = request.user

@@ -51,26 +51,21 @@ class PostListView(APIView):
         author = request.user
         title = request.data.get('title')
         content = request.data.get('content')
-        tag_ids=request.data.get('tags')
+        tag_contents = request.data.get('tags')
+
 
         if not author.is_authenticated:
-            return Response({"detail": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
-
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         if not title or not content:
-            return Response({"detail": "[title, content] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        for tag_id in tag_ids:
-            if not Tag.objects.filter(id=tag_id).exists():
-                return Response({"detail": "Provided tag not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "[title, description] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
         
         post = Post.objects.create(title=title, content=content, author=author)
-        # return Response({
-        #     "id":post.id,
-        #     "title":post.title,
-        #     "content":post.content,
-        #     "created_at":post.created_at
-        #     }, status=status.HTTP_201_CREATED)
-        post.tags.set(tag_ids)
+        for tag_content in tag_contents:
+            if not Tag.objects.filter(content=tag_content).exists():
+                post.tags.create(content=tag_content)
+            post.tags.add(Tag.objects.get(content=tag_content))
+                # return Response({"detail": "Provided tag not found."}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = PostSerializer(post)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -81,12 +76,7 @@ class PostDetailView(APIView):
             post = Post.objects.get(id=post_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        return Response({
-            "id":post.id,
-            "title":post.title,
-            "content":post.content,
-            "created_at":post.created_at
-            }, status=status.HTTP_200_OK)
+        return Response(PostSerializer(post).data, status=status.HTTP_200_OK)
         
     def delete(self, request, post_id):
         try:
@@ -100,24 +90,32 @@ class PostDetailView(APIView):
     
     def patch(self, request, post_id):
         try:
-            post=Post.objects.get(id=post_id)
+            post = Post.objects.get(id=post_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
         if request.user != post.author:
-            return Response({"detail": "You are not the author of this post."}, status=status.HTTP_401_UNAUTHORIZED)
-        title = request.data.get('title')
-        content = request.data.get('content')
-        if not title or not content:
-            return Response({"detail": "[title, content] fields missing."}, status=status.HTTP_400_BAD_REQUEST)
-        post.title = title
-        post.content = content
-        post.last_update=timezone.now()
-        post.save()
-        serializer = PostSerializer(post)
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = PostSerializer(post, data=request.data, partial=True)
+				
+				## 수정
 
-           
+        tag_contents = request.data.get("tags")
+        #tag 쪽 없으면 create 있으면 add
+        post.tags.clear()  # 처음에는 clear
+        for tag_content in tag_contents:
+            if not Tag.objects.filter(
+                content=tag_content
+            ).exists():  
+                post.tags.create(content=tag_content)
+            post.tags.add(Tag.objects.get(content=tag_content))
+
+        ## 수정
+        if not serializer.is_valid():
+            return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    
 
 class LikeView(APIView):
     def post(self, request, post_id):
