@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import TagDetailView, TagListView
+from .views import TagListView, TagDetailView
 
 app_name = 'tag'
 urlpatterns = [
