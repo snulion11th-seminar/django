@@ -20,7 +20,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'https://port-0-django-7xwyjq992llizm5au9.sel4.cloudtype.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'port-0-django-7xwyjq992llizm5au9.sel4.cloudtype.app']
 
 # Application definition
 
@@ -55,7 +55,7 @@ MIDDLEWARE = [
 CSRF_TRUSTED_ORIGINS = [
    'http://127.0.0.1:3000', 
    'http://localhost:3000',
-   'https://port-0-django-7xwyjq992llizm5au9.sel4.cloudtype.app',
+   'port-0-django-7xwyjq992llizm5au9.sel4.cloudtype.app',
 ]
 CORS_ALLOWED_ORIGINS= [
   'http://127.0.0.1:3000', 
