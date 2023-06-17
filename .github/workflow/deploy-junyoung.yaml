@@ -1,0 +1,45 @@
+name: Deploy to cloudtype
+on:
+  push:
+    branches:
+      - junyoung
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Connect deploy key
+        uses: cloudtype-github-actions/connect@v1
+        with:
+          token: ${{ secrets.CLOUDTYPE_TOKEN }}
+          ghtoken: ${{ secrets.GHP_TOKEN }}
+      - name: Deploy
+        uses: cloudtype-github-actions/deploy@v1
+        with:
+          token: ${{ secrets.CLOUDTYPE_TOKEN }}
+          project: netamijr/snulion_week11
+          stage: main
+          yaml: >
+            name: django
+
+            app: python@3.10
+
+            options:
+              env:
+                - name: SECRET_KEY
+                  value: 5xeuu%71e@wu=#f@^xs6fp0d$adc@c7dvk@8-gfb%0r@ynpe*-
+                - name: DJANGO_SUPERUSER_USERNAME
+                  value: admin
+                - name: DJANGO_SUPERUSER_PASSWORD
+                  value: admin
+                - name: DJANGO_SUPERUSER_EMAIL
+                  value: admin@admin.io
+              ports: 8000
+              start: python3 manage.py runserver 0:8000
+              prestart: python3 manage.py makemigrations && python3 manage.py migrate &&
+                python3 manage.py createsuperuser --noinput --skip-checks
+            context:
+              git:
+                url: git@github.com:${{ github.repository }}.git
+                ref: ${{ github.ref }}
