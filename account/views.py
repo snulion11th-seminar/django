@@ -46,6 +46,8 @@ def get_access_token_from_cookie(request):
     return access_token
 
 
+
+
 class SignupView(APIView):
     def post(self, request):
         college=request.data.get('college')
@@ -118,3 +120,23 @@ class UserInfoView(APIView):
         user = request.user
         serializer = UserIdUsernameSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class UserProfileView(APIView) :
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile_serializer = UserProfileSerializer(user_profile)
+        return Response(user_profile_serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user_profile = UserProfile.objects.get(user=request.user)
+        print(request.data)
+        user_profile_serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+
+        if not user_profile_serializer.is_valid():
+            return Response(user_profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user_profile_serializer.save()
+        return Response(user_profile_serializer.data, status=status.HTTP_200_OK)

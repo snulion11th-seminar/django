@@ -7,6 +7,7 @@ from rest_framework import status
 from .serializers import PostSerializer
 from tag.models import Tag
 from django.db.models import Count
+from django.contrib.auth.models import User
 
 
 # Create your views here.
