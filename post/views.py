@@ -104,3 +104,12 @@ class LikeView(APIView):
 
         serializer = PostSerializer(instance=post)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class MyPostListView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        posts = Post.objects.filter(author=request.user)
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

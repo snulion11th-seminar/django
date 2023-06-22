@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import SigninView, LogoutView, SignupView, TokenRefreshView, UserInfoView
+from .views import SigninView, LogoutView, SignupView, TokenRefreshView, UserInfoView, MyPageInfoView
 
- 
+
 app_name = 'account'
 urlpatterns = [
     # FBV url path
@@ -10,4 +10,5 @@ urlpatterns = [
     path("logout/", LogoutView.as_view()),
     path('refresh/', TokenRefreshView.as_view()),
     path("info/", UserInfoView.as_view()),   
+    path("myinfo/", MyPageInfoView.as_view()),
 ]

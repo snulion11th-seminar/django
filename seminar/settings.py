@@ -53,12 +53,12 @@ MIDDLEWARE = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-   'http://127.0.0.1:3000', 
-   'http://localhost:3000',
+    'http://127.0.0.1:3000', 
+    'http://localhost:3000',
 ]
 CORS_ALLOWED_ORIGINS= [
-  'http://127.0.0.1:3000', 
-  'http://localhost:3000',
+    'http://127.0.0.1:3000', 
+    'http://localhost:3000',
 ]
 CORS_ALLOW_CREDENTIALS = True # cookie를 주고받으려면 얘를 True로 설정해야 해요.
 CORS_ALLOW_HEADERS = (

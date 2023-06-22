@@ -59,24 +59,15 @@ class LogoutView(APIView):
         
 class TokenRefreshView(APIView):
     def post(self, request):
-        is_access_token_valid = request.user.is_authenticated
         refresh_token = request.data['refresh']
         try:
             RefreshToken(refresh_token).verify()
-            is_refresh_token_blacklisted = True
         except:
-            is_refresh_token_blacklisted = False
-        if not is_access_token_valid :  
-            if not is_refresh_token_blacklisted:
-                return Response({"detail": "login 을 다시 해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
-            else:
-                new_access_token = str(RefreshToken(refresh_token).access_token)
-        else:
-            user = request.user
-            token = AccessToken.for_user(user)
-            new_access_token = str(token)
+            return Response({"detail" : "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        new_access_token = str(RefreshToken(refresh_token).access_token)
         response = Response({"detail": "token refreshed"}, status=status.HTTP_200_OK)
-        return response.set_cookie('access_token', value=str(new_access_token))
+        response.set_cookie('access_token', value=str(new_access_token))
+        return response
     
 class UserInfoView(APIView):
     def get(self, request):
@@ -85,3 +76,35 @@ class UserInfoView(APIView):
         user = request.user
         serializer = UserIdUsernameSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class MyPageInfoView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        profile = UserProfile.objects.get(user=user)
+        print(profile)
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user = request.user
+        user_serializer = UserSerializer(user, data=request.data, partial=True)
+
+        if not user_serializer.is_valid():
+            return Response({"Validation Error"}, status=status.HTTP_400_BAD_REQUEST)
+        user_serializer.save()
+
+        profile = UserProfile.objects.get(user=user)
+        profile_serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+
+        if not profile_serializer.is_valid():
+            return Response({"Validation Error"}, status=status.HTTP_400_BAD_REQUEST)
+        profile_serializer.save()
+
+        return Response(profile_serializer.data, status=status.HTTP_200_OK)
