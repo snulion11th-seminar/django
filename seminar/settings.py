@@ -200,3 +200,5 @@ CORS_ALLOW_HEADERS = (
     "x-csrftoken",
     "x-requested-with",
 )
+
+SESSION_COOKIE_DOMAIN = '.cloudtype.app'
