@@ -192,6 +192,7 @@ CORS_ALLOWED_ORIGINS= [ # (헤더) Access-Control-Allow-Origin 에 담을 주소
     'https://web-react-dihik2mlj88n7qz.sel4.cloudtype.app'
 ]
 CORS_ALLOW_CREDENTIALS = True # cookie를 주고받으려면 얘를 True로 설정해야 해요.
+
 CORS_ALLOW_HEADERS = (
     "accept",
     "authorization",
