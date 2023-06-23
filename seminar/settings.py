@@ -182,12 +182,14 @@ SIMPLE_JWT = {
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000', 
     'http://localhost:3000',
-    'https://port-0-django-dihik2mlj88n7qz.sel4.cloudtype.app'
+    'https://port-0-django-dihik2mlj88n7qz.sel4.cloudtype.app',
+    'https://web-react-dihik2mlj88n7qz.sel4.cloudtype.app/signin'
 ]
 
 CORS_ALLOWED_ORIGINS= [ # (헤더) Access-Control-Allow-Origin 에 담을 주소들
     'http://127.0.0.1:3000', 
     'http://localhost:3000',
+    'https://web-react-dihik2mlj88n7qz.sel4.cloudtype.app/signin'
 ]
 CORS_ALLOW_CREDENTIALS = True # cookie를 주고받으려면 얘를 True로 설정해야 해요.
 CORS_ALLOW_HEADERS = (
