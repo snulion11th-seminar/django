@@ -83,23 +83,53 @@ class LogoutView(APIView):
         RefreshToken(request.data['refresh']).blacklist()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+# class Refresh(APIView):
+#     def post(self, request):
+#         if not request.user.is_authenticated:
+#             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+#         try:
+#             Refresh_Token = request.COOKIES.get('Refresh_Token')            
+#             NewAccessToken = RefreshToken(Refresh_Token).access_token
+#             response=Response({"detail": "Access Token이 재발급되었습니다."}, status=status.HTTP_202_ACCEPTED)
+#             response.set_cookie('access_token', value=str(NewAccessToken))
+#         except:
+#             response=Response({"detail": "잘못된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
+#         return response
+
+
+## 수정!!
 class Refresh(APIView):
     def post(self, request):
-        if not request.user.is_authenticated:
-            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        refresh_token = request.data['refresh']
         try:
-            Refresh_Token = request.COOKIES.get('Refresh_Token')            
-            NewAccessToken = RefreshToken(Refresh_Token).access_token
-            resp=Response({"detail": "Access Token이 재발급되었습니다."}, status=status.HTTP_202_ACCEPTED)
-            resp.set_cookie('access_token', value=str(NewAccessToken))
+            RefreshToken(refresh_token).verify()
         except:
-            resp=Response({"detail": "잘못된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
-        return resp
+            return Response({"detail" : "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        new_access_token = str(RefreshToken(refresh_token).access_token)
+        response = Response({"detail": "token refreshed"}, status=status.HTTP_200_OK)
+        response.set_cookie('access_token', value=str(new_access_token))
+        return response
+## 수정!!
     
 class UserInfoView(APIView):
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
         user = request.user
-        serializer = UserIdUsernameSerializer(user)
+        userProfile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(userProfile)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        user.email = request.data.get('email', user.email)
+        user.username = request.data.get('username', user.username)
+        user.save()
+        user_profile = UserProfile.objects.get(user=user)
+        user_profile.college = request.data.get('college', user_profile.college)
+        user_profile.major = request.data.get('major', user_profile.major)
+        user_profile.save()
+        return Response({"detail": "수정되었습니다."}, status=status.HTTP_200_OK)

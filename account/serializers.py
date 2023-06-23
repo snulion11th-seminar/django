@@ -6,7 +6,7 @@ from rest_framework.serializers import ValidationError
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "password", "email"]
+        fields = ["id", "username", "password", "email"]
 
 ### 방금 붙인 코드 아래에 붙여주세요! ###
 
